@@ -1,7 +1,7 @@
 <?php
 
 
-include_once('includes/config.php');
+include_once(__DIR__ . '/config.php');
 
 // show PHP errors
 ini_set('display_errors', 1);
@@ -557,61 +557,6 @@ if($action == 'update_customer') {
 	
 }
 
-// Update product
-if($action == 'update_product') {
-
-	// output any connection error
-	if ($mysqli->connect_error) {
-	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
-	}
-
-	// invoice product information
-	$getID = $_POST['id']; // id
-	$product_name = $_POST['product_name']; // product name
-	$product_desc = $_POST['product_desc']; // product desc
-	$product_price = $_POST['product_price']; // product price
-
-	// the query
-	$query = "UPDATE products SET
-				product_name = ?,
-				product_desc = ?,
-				product_price = ?
-			 WHERE product_id = ?
-			";
-
-	/* Prepare statement */
-	$stmt = $mysqli->prepare($query);
-	if($stmt === false) {
-	  trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
-	}
-
-	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
-	$stmt->bind_param(
-		'ssss',
-		$product_name,$product_desc,$product_price,$getID
-	);
-
-	//execute the query
-	if($stmt->execute()){
-	    //if saving success
-		echo json_encode(array(
-			'status' => 'Success',
-			'message'=> 'Product has been updated successfully!'
-		));
-
-	} else {
-	    //if unable to create new record
-	    echo json_encode(array(
-	    	'status' => 'Error',
-	    	//'message'=> 'There has been an error, please try again.'
-	    	'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
-	    ));
-	}
-
-	//close database connection
-	$mysqli->close();
-	
-}
 
 
 // Adding new product
@@ -851,49 +796,6 @@ if($action == 'update_invoice') {
 
 }
 
-// Adding new product
-if($action == 'delete_product') {
-
-	// output any connection error
-	if ($mysqli->connect_error) {
-	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
-	}
-
-	$id = $_POST["delete"];
-
-	// the query
-	$query = "DELETE FROM products WHERE product_id = ?";
-
-	/* Prepare statement */
-	$stmt = $mysqli->prepare($query);
-	if($stmt === false) {
-	  trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
-	}
-
-	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
-	$stmt->bind_param('s',$id);
-
-	//execute the query
-	if($stmt->execute()){
-	    //if saving success
-		echo json_encode(array(
-			'status' => 'Success',
-			'message'=> 'Product has been deleted successfully!'
-		));
-
-	} else {
-	    //if unable to create new record
-	    echo json_encode(array(
-	    	'status' => 'Error',
-	    	//'message'=> 'There has been an error, please try again.'
-	    	'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
-	    ));
-	}
-
-	// close connection 
-	$mysqli->close();
-
-}
 
 // Login to system
 if($action == 'login') {
@@ -939,57 +841,6 @@ if($action == 'login') {
     }
 }
 
-// Adding new product
-if($action == 'add_product') {
-
-	$product_name = $_POST['product_name'];
-	$product_desc = $_POST['product_desc'];
-	$product_price = $_POST['product_price'];
-
-	//our insert query query
-	$query  = "INSERT INTO products
-				(
-					product_name,
-					product_desc,
-					product_price
-				)
-				VALUES (
-					?, 
-                	?,
-                	?
-                );
-              ";
-
-    header('Content-Type: application/json');
-
-	/* Prepare statement */
-	$stmt = $mysqli->prepare($query);
-	if($stmt === false) {
-	  trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
-	}
-
-	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
-	$stmt->bind_param('sss',$product_name,$product_desc,$product_price);
-
-	if($stmt->execute()){
-	    //if saving success
-		echo json_encode(array(
-			'status' => 'Success',
-			'message'=> 'Product has been added successfully!'
-		));
-
-	} else {
-	    //if unable to create new record
-	    echo json_encode(array(
-	    	'status' => 'Error',
-	    	//'message'=> 'There has been an error, please try again.'
-	    	'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
-	    ));
-	}
-
-	//close database connection
-	$mysqli->close();
-}
 
 // Adding new user
 if($action == 'add_user') {

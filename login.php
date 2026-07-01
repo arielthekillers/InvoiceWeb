@@ -4,8 +4,8 @@
 * Version: 1.0                                                                *
 * Developer: Abhishek Raj                                                     *
 *******************************************************************************/
-
-include('header.php');
+include('includes/header-login.php');
+include('includes/functions.php');
 session_start();
 
 // Connect to the database

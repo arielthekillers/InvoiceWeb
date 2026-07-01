@@ -1,3 +1,4 @@
+var BASE_URL = 'http://localhost/invoice/';
 
 $(document).ready(function() {
 
@@ -7,14 +8,7 @@ $(document).ready(function() {
 		$(".invoice_type").text(invoiceType);
 	});
 
-	// Load dataTables
-	$("#data-table").dataTable();
 
-	// add product
-	$("#action_add_product").click(function(e) {
-		e.preventDefault();
-	    actionAddProduct();
-	});
 
 	// password strength
 	var options = {
@@ -71,12 +65,6 @@ $(document).ready(function() {
 		updateCustomer();
 	});
 
-	// update product
-	$(document).on('click', "#action_update_product", function(e) {
-		e.preventDefault();
-		updateProduct();
-	});
-
 	// login form
 	$(document).bind('keypress', function(e) {
 		e.preventDefault;
@@ -118,19 +106,6 @@ $(document).ready(function() {
 	    $('#delete_invoice').modal({ backdrop: 'static', keyboard: false }).one('click', '#delete', function() {
 			deleteInvoice(invoiceId);
 			$(invoice).closest('tr').remove();
-        });
-   	});
-
-	// delete product
-	$(document).on('click', ".delete-product", function(e) {
-        e.preventDefault();
-
-        var productId = 'action=delete_product&delete='+ $(this).attr('data-product-id'); //build a post data structure
-        var product = $(this);
-
-	    $('#confirm').modal({ backdrop: 'static', keyboard: false }).one('click', '#delete', function() {
-			deleteProduct(productId);
-			$(product).closest('tr').remove();
         });
    	});
 
@@ -365,47 +340,9 @@ $(document).ready(function() {
 
 			$.ajax({
 
-				url: 'response.php',
+				url: BASE_URL + 'includes/response.php',
 				type: 'POST',
 				data: $("#add_user").serialize(),
-				dataType: 'json',
-				success: function(data){
-					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
-					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-					$btn.button("reset");
-				},
-				error: function(data){
-					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
-					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-					$btn.button("reset");
-				}
-
-			});
-		}
-
-	}
-
-	function actionAddProduct() {
-
-		var errorCounter = validateForm();
-
-		if (errorCounter > 0) {
-		    $("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
-		    $("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
-		    $("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-		} else {
-
-			$(".required").parent().removeClass("has-error");
-
-			var $btn = $("#action_add_product").button("loading");
-
-			$.ajax({
-
-				url: 'response.php',
-				type: 'POST',
-				data: $("#add_product").serialize(),
 				dataType: 'json',
 				success: function(data){
 					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
@@ -441,7 +378,7 @@ $(document).ready(function() {
 
 			$.ajax({
 
-				url: 'response.php',
+				url: BASE_URL + 'includes/response.php',
 				type: 'POST',
 				data: $("#create_customer").serialize(),
 				dataType: 'json',
@@ -482,7 +419,7 @@ $(document).ready(function() {
 
 			$.ajax({
 
-				url: 'response.php',
+				url: BASE_URL + 'includes/response.php',
 				type: 'POST',
 				data: $("#create_invoice").serialize(),
 				dataType: 'json',
@@ -506,35 +443,11 @@ $(document).ready(function() {
 
 	}
 
-   	function deleteProduct(productId) {
-
-        jQuery.ajax({
-
-        	url: 'response.php',
-            type: 'POST', 
-            data: productId,
-            dataType: 'json', 
-            success: function(data){
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
-				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-				$btn.button("reset");
-			},
-			error: function(data){
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
-				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-				$btn.button("reset");
-			} 
-    	});
-
-   	}
-
    	function deleteUser(userId) {
 
         jQuery.ajax({
 
-        	url: 'response.php',
+        	url: BASE_URL + 'includes/response.php',
             type: 'POST', 
             data: userId,
             dataType: 'json', 
@@ -558,7 +471,7 @@ $(document).ready(function() {
 
         jQuery.ajax({
 
-        	url: 'response.php',
+        	url: BASE_URL + 'includes/response.php',
             type: 'POST', 
             data: userId,
             dataType: 'json', 
@@ -580,7 +493,7 @@ $(document).ready(function() {
 
         jQuery.ajax({
 
-        	url: 'response.php',
+        	url: BASE_URL + 'includes/response.php',
             type: 'POST', 
             data: invoiceId,
             dataType: 'json', 
@@ -602,35 +515,9 @@ $(document).ready(function() {
 
         jQuery.ajax({
 
-        	url: 'response.php',
+        	url: BASE_URL + 'includes/response.php',
             type: 'POST', 
             data: invoiceId,
-            dataType: 'json', 
-            success: function(data){
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
-				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-				$btn.button("reset");
-			},
-			error: function(data){
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
-				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-				$btn.button("reset");
-			} 
-    	});
-
-   	}
-
-   	function updateProduct() {
-
-   		var $btn = $("#action_update_product").button("loading");
-
-        jQuery.ajax({
-
-        	url: 'response.php',
-            type: 'POST', 
-            data: $("#update_product").serialize(),
             dataType: 'json', 
             success: function(data){
 				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
@@ -654,7 +541,7 @@ $(document).ready(function() {
 
         jQuery.ajax({
 
-        	url: 'response.php',
+        	url: BASE_URL + 'includes/response.php',
             type: 'POST', 
             data: $("#update_user").serialize(),
             dataType: 'json', 
@@ -680,7 +567,7 @@ $(document).ready(function() {
 
         jQuery.ajax({
 
-        	url: 'response.php',
+        	url: BASE_URL + 'includes/response.php',
             type: 'POST', 
             data: $("#update_customer").serialize(),
             dataType: 'json', 
@@ -707,7 +594,7 @@ $(document).ready(function() {
 
         jQuery.ajax({
 
-        	url: 'response.php',
+        	url: BASE_URL + 'includes/response.php',
             type: 'POST', 
             data: $("#update_invoice").serialize(),
             dataType: 'json', 
@@ -731,7 +618,7 @@ $(document).ready(function() {
 
    		jQuery.ajax({
 
-   			url: 'response.php',
+   			url: BASE_URL + 'includes/response.php',
    			type: 'POST',
    			data: action,
    			dataType: 'json',
@@ -765,7 +652,7 @@ $(document).ready(function() {
 			var $btn = $("#btn-login").button("loading");
 
 			jQuery.ajax({
-				url: 'response.php',
+				url: BASE_URL + 'includes/response.php',
 				type: "POST",
 				data: $("#login_form").serialize(), // serializes the form's elements.
 				dataType: 'json',
@@ -775,7 +662,7 @@ $(document).ready(function() {
 					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
 					$btn.button("reset");
 
-					window.location = "dashboard.php";
+					window.location = BASE_URL + "pages/dashboard.php";
 				},
 				error: function(data){
 					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);

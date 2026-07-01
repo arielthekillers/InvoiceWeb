@@ -1,6 +1,7 @@
 <?php
 // Debugging
 ini_set('error_reporting', E_ALL);
+define('BASE_URL', 'http://localhost/invoice/');
 
 // DATABASE INFORMATION
 define('DATABASE_HOST', 'localhost');
@@ -8,41 +9,41 @@ define('DATABASE_NAME', 'invoicemgsys');
 define('DATABASE_USER', 'root');
 define('DATABASE_PASS', '');
 
-// COMPANY INFORMATION
+// COMPANY INFORMATION (Info Pembuat Invoice)
 define('COMPANY_LOGO', 'images/logo.png');
 define('COMPANY_LOGO_WIDTH', '300');
 define('COMPANY_LOGO_HEIGHT', '90');
-define('COMPANY_NAME','Invoice Mg System');
-define('COMPANY_ADDRESS_1','123 Something Street');
-define('COMPANY_ADDRESS_2','Collierville, 3590 Lords Way');
-define('COMPANY_ADDRESS_3','Paekinta');
-define('COMPANY_COUNTY','US');
-define('COMPANY_POSTCODE','10100');
+define('COMPANY_NAME','Ahmad Darul Arqam');
+define('COMPANY_ADDRESS_1','Bontang');
+define('COMPANY_ADDRESS_2','Kalimantan Timur');
+define('COMPANY_ADDRESS_3','Indonesia');
+define('COMPANY_COUNTY','ID');
+define('COMPANY_POSTCODE','75311');
 
-define('COMPANY_NUMBER','Company No: 699400000'); // Company registration number
-define('COMPANY_VAT', 'Company VAT: 690000007'); // Company TAX/VAT number
+define('COMPANY_NUMBER','Telp: +6281359774765'); // No. Telepon
+define('COMPANY_VAT', ''); // Tidak digunakan
 
 // EMAIL DETAILS
-define('EMAIL_FROM', 'sales@inms.ccc'); // Email address invoice emails will be sent from
-define('EMAIL_NAME', 'Invoice Mg System'); // Email from address
-define('EMAIL_SUBJECT', 'Invoice default email subject'); // Invoice email subject
-define('EMAIL_BODY_INVOICE', 'Invoice default body'); // Invoice email body
-define('EMAIL_BODY_QUOTE', 'Quote default body'); // Invoice email body
-define('EMAIL_BODY_RECEIPT', 'Receipt default body'); // Invoice email body
+define('EMAIL_FROM', 'ahmaddarularqam@gmail.com');
+define('EMAIL_NAME', 'Ahmad Darul Arqam');
+define('EMAIL_SUBJECT', 'Invoice dari Ahmad Darul Arqam');
+define('EMAIL_BODY_INVOICE', 'Terlampir invoice untuk pekerjaan yang telah selesai. Mohon untuk segera diproses pembayarannya. Terima kasih.');
+define('EMAIL_BODY_QUOTE', 'Terlampir penawaran harga untuk pekerjaan yang diminta.');
+define('EMAIL_BODY_RECEIPT', 'Terlampir tanda terima pembayaran. Terima kasih atas kepercayaan Anda.');
 
-// OTHER SETTINFS
-define('INVOICE_PREFIX', 'MD'); // Prefix at start of invoice - leave empty '' for no prefix
-define('INVOICE_INITIAL_VALUE', '1'); // Initial invoice order number (start of increment)
-define('INVOICE_THEME', '#222222'); // Theme colour, this sets a colour theme for the PDF generate invoice
-define('TIMEZONE', 'America/Los_Angeles'); // Timezone - See for list of Timezone's http://php.net/manual/en/function.date-default-timezone-set.php
-define('DATE_FORMAT', 'DD/MM/YYYY'); // DD/MM/YYYY or MM/DD/YYYY
-define('CURRENCY', '$'); // Currency symbol
-define('ENABLE_VAT', true); // Enable TAX/VAT
-define('VAT_INCLUDED', false); // Is VAT included or excluded?
-define('VAT_RATE', '10'); // This is the percentage value
+// OTHER SETTINGS
+define('INVOICE_PREFIX', 'INV'); // Prefix nomor invoice
+define('INVOICE_INITIAL_VALUE', '1'); // Nomor awal invoice
+define('INVOICE_THEME', '#1a5276'); // Warna tema PDF invoice
+define('TIMEZONE', 'Asia/Makassar'); // WIB+1 = WITA (Bontang, Kalimantan Timur)
+define('DATE_FORMAT', 'DD/MM/YYYY');
+define('CURRENCY', 'Rp '); // Rupiah
+define('ENABLE_VAT', false); // Tidak menggunakan PPN/VAT
+define('VAT_INCLUDED', false);
+define('VAT_RATE', '0');
 
-define('PAYMENT_DETAILS', 'Invoice Mg System.<br>Sort Code: 00-00-00<br>Account Number: 12345678'); // Payment information
-define('FOOTER_NOTE', 'Invoice Management System');
+define('PAYMENT_DETAILS', 'Bank Mandiri<br>No. Rekening: 1480014663770<br>a.n. Ahmad Darul Arqam');
+define('FOOTER_NOTE', 'Invoice ini sah tanpa tanda tangan basah atau materai.');
 
 // CONNECT TO THE DATABASE
 $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
