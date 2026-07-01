@@ -263,6 +263,7 @@ if ($action == 'create_invoice'){
 	// Non-FOC items won't have their index in the array
 	foreach($_POST['invoice_product'] as $key => $value) {
 	    $item_product  = $mysqli->real_escape_string($value);
+	    $item_product_desc = isset($_POST['invoice_product_desc'][$key]) ? $mysqli->real_escape_string($_POST['invoice_product_desc'][$key]) : '';
 	    $item_qty      = 1;
 	    $item_price    = floatval($_POST['invoice_product_price'][$key]);
 	    $is_foc        = isset($_POST['invoice_product_foc'][$key]) && $_POST['invoice_product_foc'][$key] == '1';
@@ -274,6 +275,7 @@ if ($action == 'create_invoice'){
 	    $query .= "INSERT INTO invoice_items (
 				invoice,
 				product,
+				product_desc,
 				qty,
 				price,
 				discount,
@@ -281,6 +283,7 @@ if ($action == 'create_invoice'){
 			) VALUES (
 				'".$invoice_number."',
 				'".$item_product."',
+				'".$item_product_desc."',
 				'".$item_qty."',
 				'".$item_price."',
 				'".$item_discount."',
@@ -325,9 +328,9 @@ if($action == 'delete_invoice') {
 	$id = $_POST["delete"];
 
 	// the query
-	$query = "DELETE FROM invoices WHERE invoice = ".$id.";";
-	$query .= "DELETE FROM customers WHERE invoice = ".$id.";";
-	$query .= "DELETE FROM invoice_items WHERE invoice = ".$id.";";
+	$query = "DELETE FROM invoices WHERE invoice = '".$mysqli->real_escape_string($id)."';";
+	$query .= "DELETE FROM customers WHERE invoice = '".$mysqli->real_escape_string($id)."';";
+	$query .= "DELETE FROM invoice_items WHERE invoice = '".$mysqli->real_escape_string($id)."';";
 
 	unlink(__DIR__ . '/../invoices/'.$id.'.pdf');
 
@@ -547,6 +550,7 @@ if($action == 'update_invoice') {
 	// invoice product items - per-item FOC support
 	foreach($_POST['invoice_product'] as $key => $value) {
 	    $item_product  = $mysqli->real_escape_string($value);
+	    $item_product_desc = isset($_POST['invoice_product_desc'][$key]) ? $mysqli->real_escape_string($_POST['invoice_product_desc'][$key]) : '';
 	    $item_qty      = 1;
 	    $item_price    = floatval($_POST['invoice_product_price'][$key]);
 	    $is_foc        = isset($_POST['invoice_product_foc'][$key]) && $_POST['invoice_product_foc'][$key] == '1';
@@ -556,6 +560,7 @@ if($action == 'update_invoice') {
 	    $query .= "INSERT INTO invoice_items (
 				invoice,
 				product,
+				product_desc,
 				qty,
 				price,
 				discount,
@@ -563,6 +568,7 @@ if($action == 'update_invoice') {
 			) VALUES (
 				'".$invoice_number."',
 				'".$item_product."',
+				'".$item_product_desc."',
 				'".$item_qty."',
 				'".$item_price."',
 				'".$item_discount."',

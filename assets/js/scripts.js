@@ -104,6 +104,17 @@ $(document).ready(function() {
         });
    	});
 
+	// delete invoice from detail page
+	$(document).on('click', ".delete-invoice-detail", function(e) {
+        e.preventDefault();
+        var invoiceIdStr = $(this).attr('data-invoice-id');
+        var invoiceId = 'action=delete_invoice&delete='+ invoiceIdStr; 
+
+	    $('#delete_invoice_detail').modal({ backdrop: 'static', keyboard: false }).one('click', '#delete_detail_confirm', function() {
+			deleteInvoiceAndRedirect(invoiceId);
+        });
+   	});
+
 	// create customer
 	$("#action_create_customer").click(function(e) {
 		e.preventDefault();
@@ -223,9 +234,14 @@ $(document).ready(function() {
     $(".add-row").click(function(e) {
         e.preventDefault();
         var newRow = '<tr>' +
-            '<td><div class="d-flex align-items-center">' +
+            '<td><div class="d-flex align-items-center mb-2">' +
             '<a href="#" class="btn btn-danger btn-sm delete-row me-2"><i class="bi bi-x-lg"></i></a>' +
-            '<input type="text" class="form-control invoice_product" name="invoice_product[]" placeholder="Masukkan deskripsi pekerjaan/jasa">' +
+            '<textarea class="form-control invoice_product" name="invoice_product[]" placeholder="Masukkan deskripsi pekerjaan/jasa" rows="1" style="resize: vertical; min-height: 38px; height: auto;"></textarea>' +
+            '</div>' +
+            '<div class="ps-5 sub-items-wrapper">' +
+            '<input type="hidden" class="invoice_product_desc_hidden" name="invoice_product_desc[]" value="">' +
+            '<div class="sub-items-list"></div>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary add-sub-item mt-1"><i class="bi bi-plus"></i> Tambah Sub Item</button>' +
             '</div></td>' +
             '<td><div class="input-group">' +
             '<span class="input-group-text">Rp</span>' +
@@ -263,6 +279,48 @@ $(document).ready(function() {
 			if ($hiddenFoc.length) $hiddenFoc.val('0');
 		}
 		calculateTotal();
+	});
+
+	// Sub Items Logic
+	$(document).on('click', '.add-sub-item', function(e) {
+		e.preventDefault();
+		var wrapper = $(this).closest('.sub-items-wrapper');
+		var list = wrapper.find('.sub-items-list');
+		var subItemRow = '<div class="sub-item-row d-flex align-items-center mb-1">' +
+						 '<input type="text" class="form-control form-control-sm sub-item-input" placeholder="Sub item">' +
+						 '<button type="button" class="btn btn-sm btn-outline-danger ms-1 remove-sub-item"><i class="bi bi-x"></i></button>' +
+						 '</div>';
+		list.append(subItemRow);
+	});
+
+	$(document).on('click', '.remove-sub-item', function(e) {
+		e.preventDefault();
+		var wrapper = $(this).closest('.sub-items-wrapper');
+		$(this).closest('.sub-item-row').remove();
+		syncSubItems(wrapper);
+	});
+
+	$(document).on('input', '.sub-item-input', function() {
+		var wrapper = $(this).closest('.sub-items-wrapper');
+		syncSubItems(wrapper);
+	});
+
+	function syncSubItems(wrapper) {
+		var subItems = [];
+		wrapper.find('.sub-item-input').each(function() {
+			var val = $(this).val().trim();
+			if (val !== "") {
+				subItems.push(val);
+			}
+		});
+		wrapper.find('.invoice_product_desc_hidden').val(subItems.join("\n"));
+	}
+	
+	// Sync all sub-items on form submit
+	$('#create_invoice, #update_invoice').on('submit', function() {
+		$('.sub-items-wrapper').each(function() {
+			syncSubItems($(this));
+		});
 	});
 
 	function updateTotals(elem) {
@@ -523,6 +581,21 @@ $(document).ready(function() {
 
    	}
 
+    function deleteInvoiceAndRedirect(invoiceId) {
+        jQuery.ajax({
+        	url: BASE_URL + 'includes/response.php',
+            type: 'POST', 
+            data: invoiceId,
+            dataType: 'json', 
+            success: function(data){
+				window.location.href = 'invoice-list.php';
+			},
+			error: function(data){
+				alert("Error deleting invoice");
+			} 
+    	});
+   	}
+
    	function updateUser() {
 
    		var $btn = $("#action_update_user").button("loading");
@@ -575,7 +648,7 @@ $(document).ready(function() {
 
    	}
 
-   	function updateInvoice() {
+    	function updateInvoice() {
 
    		var $btn = $("#action_update_invoice").button("loading");
    		$("#update_invoice").find(':input:disabled').removeAttr('disabled');
@@ -587,10 +660,8 @@ $(document).ready(function() {
             data: $("#update_invoice").serialize(),
             dataType: 'json', 
             success: function(data){
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
-				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-				$btn.button("reset");
+				var invoiceId = $("input[name='invoice_id']").val();
+				window.location.href = 'invoice-detail.php?id=' + invoiceId;
 			},
 			error: function(data){
 				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);

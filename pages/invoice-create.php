@@ -20,7 +20,6 @@ include('../includes/functions.php');
 <form method="post" id="create_invoice">
     <input type="hidden" name="action" value="create_invoice">
     <input type="hidden" name="invoice_type" value="invoice">
-    <input type="hidden" name="invoice_status" value="open">
     <!-- Hidden field stores DD/MM/YYYY formatted date for PHP -->
     <input type="hidden" name="invoice_date" id="invoice_date_formatted">
     
@@ -36,6 +35,16 @@ include('../includes/functions.php');
                 <input type="text" name="invoice_id" id="invoice_id" class="form-control required" 
                        placeholder="Otomatis dari tanggal" readonly
                        style="background:#f8f9fa; font-weight:600;">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="input-group">
+                <span class="input-group-text">Status</span>
+                <select name="invoice_status" id="invoice_status" class="form-select">
+                    <option value="open" selected>Open</option>
+                    <option value="paid">Paid</option>
+                    <option value="canceled">Canceled</option>
+                </select>
             </div>
         </div>
     </div>
@@ -73,11 +82,20 @@ include('../includes/functions.php');
             <tbody>
                 <tr>
                     <td>
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center mb-2">
                             <a href="#" class="btn btn-danger btn-sm delete-row me-2"><i class="bi bi-x-lg"></i></a>
                             <textarea class="form-control invoice_product" name="invoice_product[]"
                                       placeholder="Masukkan deskripsi pekerjaan/jasa"
                                       rows="1" style="resize: vertical; min-height: 38px; height: auto;"></textarea>
+                        </div>
+                        <div class="ps-5 sub-items-wrapper">
+                            <input type="hidden" class="invoice_product_desc_hidden" name="invoice_product_desc[]" value="">
+                            <div class="sub-items-list">
+                                <!-- Dynamic sub items will be appended here -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary add-sub-item mt-1">
+                                <i class="bi bi-plus"></i> Tambah Sub Item
+                            </button>
                         </div>
                     </td>
                     <td>

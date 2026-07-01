@@ -19,8 +19,7 @@ function getInvoices() {
 		FROM invoices i
 		JOIN customers c
 		ON c.invoice = i.invoice
-		WHERE i.invoice = c.invoice
-		ORDER BY i.invoice";
+		ORDER BY STR_TO_DATE(i.invoice_date, '%d/%m/%Y') DESC, i.id DESC";
 
 	// mysqli select query
 	$results = $mysqli->query($query);
@@ -30,47 +29,68 @@ function getInvoices() {
 
 		print '<table class="table table-sm table-striped table-hover table-bordered mb-0" cellspacing="0"><thead><tr>
 
+				<th width="5%">No</th>
 				<th>Invoice</th>
 				<th>Customer</th>
 				<th>Issue Date</th>
-				<th>Type</th>
 				<th>Status</th>
-				<th>Actions</th>
 
 			  </tr></thead><tbody>';
 
+		$months = array(
+			1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+			'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+		);
+
+        $no = 1;
 		while($row = $results->fetch_assoc()) {
+			
+			// Format date to Indonesian
+			$raw_date = $row["invoice_date"];
+			if (strpos($raw_date, '/') !== false) {
+				$parts = explode('/', $raw_date);
+				if (count($parts) == 3) {
+					$formatted_date = (int)$parts[0] . ' ' . $months[(int)$parts[1]] . ' ' . $parts[2];
+				} else {
+					$formatted_date = $raw_date;
+				}
+			} elseif (strpos($raw_date, '-') !== false) {
+				$parts = explode('-', $raw_date);
+				if (count($parts) == 3) {
+					// Assuming YYYY-MM-DD
+					$formatted_date = (int)$parts[2] . ' ' . $months[(int)$parts[1]] . ' ' . $parts[0];
+				} else {
+					$formatted_date = $raw_date;
+				}
+			} else {
+				$formatted_date = $raw_date;
+			}
 
 			print '
 				<tr>
-					<td>'.$row["invoice"].'</td>
+				    <td class="text-center">'.$no++.'</td>
+					<td><a href="invoice-detail.php?id='.$row["invoice"].'" class="text-primary text-decoration-none fw-bold">'.$row["invoice"].'</a></td>
 					<td>'.$row["name"].'</td>
-				    <td>'.$row["invoice_date"].'</td>
-				    <td>'.$row["invoice_type"].'</td>
+				    <td>'.$formatted_date.'</td>
 				';
 
 				if($row['status'] == "open"){
-					print '<td><span class="badge bg-primary">'.$row['status'].'</span></td>';
+					print '<td><span class="badge bg-primary">'.ucfirst($row['status']).'</span></td>';
 				} elseif ($row['status'] == "paid"){
-					print '<td><span class="badge bg-success">'.$row['status'].'</span></td>';
+					print '<td><span class="badge bg-success">'.ucfirst($row['status']).'</span></td>';
+				} elseif ($row['status'] == "canceled"){
+					print '<td><span class="badge bg-danger">'.ucfirst($row['status']).'</span></td>';
 				} else {
-					print '<td></td>';
+					print '<td><span class="badge bg-secondary">'.ucfirst($row['status']).'</span></td>';
 				}
 
 			print '
-				    <td>
-                        <div class="d-flex gap-1">
-                            <a href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-light btn-sm text-primary border-0" title="Edit"><i class="bi bi-pencil"></i></a> 
-                            <a href="invoice-print.php?id='.$row["invoice"].'" class="btn btn-light btn-sm text-info border-0" target="_blank" title="Print"><i class="bi bi-printer"></i></a> 
-                            <a data-invoice-id="'.$row['invoice'].'" class="btn btn-light btn-sm text-danger border-0 delete-invoice" title="Delete"><i class="bi bi-trash"></i></a>
-                        </div>
-                    </td>
 			    </tr>
 			';
 
 		}
 
-		print '</tr></tbody></table>';
+		print '</tbody></table>';
 
 	} else {
 

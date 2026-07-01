@@ -99,10 +99,6 @@ input.shipping {
   width: 100%;
   padding: 10px;
 }
-#invoice_status,
-#invoice_type {
-  margin-top: 23px;
-}
 
 .invoice_product_qty {
   width: 50px;

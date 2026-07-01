@@ -20,7 +20,7 @@ define('COMPANY_ADDRESS_3','Indonesia');
 define('COMPANY_COUNTY','ID');
 define('COMPANY_POSTCODE','75311');
 
-define('COMPANY_NUMBER','Telp: +6281359774765'); // No. Telepon
+define('COMPANY_NUMBER','+6281359774765'); // No. Telepon
 define('COMPANY_VAT', ''); // Tidak digunakan
 
 // EMAIL DETAILS

@@ -73,7 +73,7 @@ $mysqli->close();
         .text-right { text-align: right; }
         .font-weight-bold { font-weight: bold; }
         
-        .header { margin-bottom: 30px; } /* Reduced margin */
+        .header { margin-bottom: 50px; } /* Increased margin */
         .header h1 {
             font-size: 20px; /* Smaller header */
             margin: 0;
@@ -92,8 +92,8 @@ $mysqli->close();
         }
         .info-block { width: 48%; }
         .info-block h4 {
-            font-size: 13px;
-            margin: 0 0 8px 0;
+            font-size: 12px;
+            margin: 0 0 5px 0;
         }
         .info-table {
             width: 100%;
@@ -101,9 +101,10 @@ $mysqli->close();
         }
         .info-table td {
             vertical-align: top;
-            padding-bottom: 3px;
+            padding-bottom: 0px;
+            font-size: 12px;
         }
-        .info-table td:first-child { width: 70px; }
+        .info-table td:first-child { width: 50px; font-weight: 600; }
         .info-table td:nth-child(2) { width: 10px; }
 
         .items-table {
@@ -239,6 +240,19 @@ $mysqli->close();
                 <td class="col-no align-top"><?php echo $no++; ?></td>
                 <td class="col-uraian align-top">
                     <div class="uraian-content"><?php echo htmlspecialchars($item['product']); ?></div>
+                    <?php if (!empty($item['product_desc'])): ?>
+                    <ul style="margin: 3px 0 0 15px; padding: 0; font-size: 11px; color: #555;">
+                        <?php 
+                        $desc_value_clean = str_replace('\n', "\n", $item['product_desc']);
+                        $subs = explode("\n", $desc_value_clean);
+                        foreach($subs as $sub) {
+                            if (trim($sub) !== '') {
+                                echo '<li>' . htmlspecialchars(trim($sub)) . '</li>';
+                            }
+                        }
+                        ?>
+                    </ul>
+                    <?php endif; ?>
                 </td>
                 <td class="col-biaya align-top">
                     <?php 

@@ -56,7 +56,6 @@ $mysqli->close();
     <input type="hidden" name="action" value="update_invoice">
     <input type="hidden" name="update_id" value="<?php echo htmlspecialchars($getID); ?>">
     <input type="hidden" name="invoice_type" value="invoice">
-    <input type="hidden" name="invoice_status" value="<?php echo htmlspecialchars($invoice_status); ?>">
     <!-- Hidden field stores DD/MM/YYYY formatted date for PHP -->
     <input type="hidden" name="invoice_date" id="invoice_date_formatted" value="<?php echo htmlspecialchars($invoice_date); ?>">
 
@@ -82,6 +81,16 @@ $mysqli->close();
                        placeholder="No. Invoice" value="<?php echo htmlspecialchars($getID); ?>">
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="input-group">
+                <span class="input-group-text">Status</span>
+                <select name="invoice_status" id="invoice_status" class="form-select">
+                    <option value="open" <?php if($invoice_status === 'open'){ ?>selected<?php } ?>>Open</option>
+                    <option value="paid" <?php if($invoice_status === 'paid'){ ?>selected<?php } ?>>Paid</option>
+                    <option value="canceled" <?php if($invoice_status === 'canceled'){ ?>selected<?php } ?>>Canceled</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <!-- Customer Selection -->
@@ -98,8 +107,21 @@ $mysqli->close();
                 </div>
                 <div class="card-body">
                     <select name="customer" id="customer_select" class="form-select required">
-                        <option value="" disabled selected>-- Pilih Pelanggan --</option>
-                        <?php popCustomersSelect(); ?>
+                        <option value="" disabled>-- Pilih Pelanggan --</option>
+                        <?php 
+                            // Get customers
+                            $mysqli3 = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+                            $query3 = "SELECT * FROM store_customers ORDER BY name ASC";
+                            $results3 = $mysqli3->query($query3);
+                            $found = false;
+                            if($results3) {
+                                while($row3 = $results3->fetch_assoc()) {
+                                    $selected = ($row3['name'] === $current_customer_name) ? 'selected' : '';
+                                    if ($selected) $found = true;
+                                    echo '<option value="'.htmlspecialchars($row3['id']).'" '.$selected.'>'.htmlspecialchars($row3['name']).'</option>';
+                                }
+                            }
+                        ?>
                     </select>
                 </div>
             </div>
@@ -140,11 +162,38 @@ $mysqli->close();
                 ?>
                 <tr>
                     <td>
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center mb-2">
                             <a href="#" class="btn btn-danger btn-sm delete-row me-2"><i class="bi bi-x-lg"></i></a>
                             <textarea class="form-control invoice_product" name="invoice_product[]"
                                       placeholder="Masukkan deskripsi pekerjaan/jasa"
                                       rows="1" style="resize: vertical; min-height: 38px; height: auto;"><?php echo htmlspecialchars($item_product); ?></textarea>
+                        </div>
+                        <div class="ps-5 sub-items-wrapper">
+                            <?php 
+                                $desc_value = isset($rows['product_desc']) ? $rows['product_desc'] : '';
+                            ?>
+                            <input type="hidden" class="invoice_product_desc_hidden" name="invoice_product_desc[]" value="<?php echo htmlspecialchars($desc_value); ?>">
+                            <div class="sub-items-list">
+                                <?php
+                                if (!empty($desc_value)) {
+                                    // Handle literal \n that might have been saved due to previous JS bug
+                                    $desc_value_clean = str_replace('\n', "\n", $desc_value);
+                                    $sub_items = explode("\n", $desc_value_clean);
+                                    foreach ($sub_items as $sub) {
+                                        $sub = trim($sub);
+                                        if (!empty($sub)) {
+                                            echo '<div class="sub-item-row d-flex align-items-center mb-1">
+                                                    <input type="text" class="form-control form-control-sm sub-item-input" placeholder="Sub item" value="'.htmlspecialchars($sub).'">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger ms-1 remove-sub-item"><i class="bi bi-x"></i></button>
+                                                  </div>';
+                                        }
+                                    }
+                                }
+                                ?>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary add-sub-item mt-1">
+                                <i class="bi bi-plus"></i> Tambah Sub Item
+                            </button>
                         </div>
                     </td>
                     <td>
