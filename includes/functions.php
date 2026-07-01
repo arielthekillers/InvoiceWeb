@@ -64,7 +64,7 @@ function getInvoices() {
                         <div class="d-flex gap-1">
                             <a href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-light btn-sm text-primary border-0" title="Edit"><i class="bi bi-pencil"></i></a> 
                             <a href="#" data-invoice-id="'.$row['invoice'].'" data-email="'.$row['email'].'" data-invoice-type="'.$row['invoice_type'].'" data-custom-email="'.$row['custom_email'].'" class="btn btn-light btn-sm text-success border-0 email-invoice" title="Email"><i class="bi bi-envelope"></i></a> 
-                            <a href="invoices/'.$row["invoice"].'.pdf" class="btn btn-light btn-sm text-info border-0" target="_blank" title="Download"><i class="bi bi-download"></i></a> 
+                            <a href="' . BASE_URL . 'invoices/'.$row["invoice"].'.pdf" class="btn btn-light btn-sm text-info border-0" target="_blank" title="Download"><i class="bi bi-download"></i></a> 
                             <a data-invoice-id="'.$row['invoice'].'" class="btn btn-light btn-sm text-danger border-0 delete-invoice" title="Delete"><i class="bi bi-trash"></i></a>
                         </div>
                     </td>
@@ -113,7 +113,7 @@ function getInvoiceId() {
 	    if($row_cnt == 0){
 			echo INVOICE_INITIAL_VALUE;
 		} else {
-			echo $row['invoice'] + 1; 
+			echo intval($row['invoice']) + 1; 
 		}
 
 	    // Frees the memory associated with a result
@@ -199,7 +199,7 @@ function popCustomersList() {
 					<td>'.$row["name"].'</td>
 				    <td>'.$row["email"].'</td>
 				    <td>'.$row["phone"].'</td>
-				    <td><a href="#" class="btn btn-light btn-sm text-primary border-0 customer-select" data-customer-name="'.$row['name'].'" data-customer-email="'.$row['email'].'" data-customer-phone="'.$row['phone'].'" data-customer-address-1="'.$row['address_1'].'" data-customer-address_2="'.$row['address_2'].'" data-customer-town="'.$row['town'].'" data-customer-county="'.$row['county'].'" data-customer-postcode="'.$row['postcode'].'" data-customer-name-ship="'.$row['name_ship'].'" data-customer-address-1-ship="'.$row['address_1_ship'].'" data-customer-address-2-ship="'.$row['address_2_ship'].'" data-customer-town-ship="'.$row['town_ship'].'" data-customer-county-ship="'.$row['county_ship'].'" data-customer-postcode-ship="'.$row['postcode_ship'].'">Select</a></td>
+				    <td><a href="#" class="btn btn-light btn-sm text-primary border-0 customer-select" data-customer-name="'.$row['name'].'" data-customer-email="'.$row['email'].'" data-customer-phone="'.$row['phone'].'" data-customer-address-1="'.$row['address_1'].'" data-customer-address_2="'.$row['address_2'].'" data-customer-town="'.$row['town'].'" data-customer-county="'.$row['county'].'" data-customer-postcode="'.$row['postcode'].'">Select</a></td>
 			    </tr>
 		    ';
 		}

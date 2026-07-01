@@ -1,4 +1,4 @@
 <?php
-require('fpdf/fpdf.php');
-require('rotation/rotation.php');
+require(__DIR__ . '/fpdf/fpdf.php');
+require(__DIR__ . '/rotation/rotation.php');
 ?>

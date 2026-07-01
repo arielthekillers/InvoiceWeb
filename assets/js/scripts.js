@@ -79,14 +79,7 @@ $(document).ready(function() {
 		actionLogin();
 	});
 
-	// download CSV
-	$(document).on('click', ".download-csv", function(e) {
-		e.preventDefault;
 
-		var action = 'action=download_csv'; //build a post data structure
-        downloadCSV(action);
-
-	});
 
 	// email invoice
 	$(document).on('click', ".email-invoice", function(e) {
@@ -162,12 +155,6 @@ $(document).ready(function() {
 		    var customer_county = $(this).attr('data-customer-county');
 		    var customer_postcode = $(this).attr('data-customer-postcode');
 
-		    var customer_name_ship = $(this).attr('data-customer-name-ship');
-		    var customer_address_1_ship = $(this).attr('data-customer-address-1-ship');
-		    var customer_address_2_ship = $(this).attr('data-customer-address-2-ship');
-		    var customer_town_ship = $(this).attr('data-customer-town-ship');
-		    var customer_county_ship = $(this).attr('data-customer-county-ship');
-		    var customer_postcode_ship = $(this).attr('data-customer-postcode-ship');
 
 		    $('#customer_name').val(customer_name);
 		    $('#customer_email').val(customer_email);
@@ -180,12 +167,6 @@ $(document).ready(function() {
 		    $('#customer_postcode').val(customer_postcode);
 
 
-		    $('#customer_name_ship').val(customer_name_ship);
-		    $('#customer_address_1_ship').val(customer_address_1_ship);
-		    $('#customer_address_2_ship').val(customer_address_2_ship);
-		    $('#customer_town_ship').val(customer_town_ship);
-		    $('#customer_county_ship').val(customer_county_ship);
-		    $('#customer_postcode_ship').val(customer_postcode_ship);
 
 		    $('#insert_customer').modal('hide');
 
@@ -386,7 +367,7 @@ $(document).ready(function() {
 					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
 					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
 					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-					$("#create_customer").before().html("<a href='./customer-add.php' class='btn btn-primary'>Add New Customer</a>");
+					$("#create_customer").before().html("<a href='" + BASE_URL + "pages/customer-add.php' class='btn btn-primary'>Add New Customer</a>");
 					$("#create_cuatomer").remove();
 					$btn.button("reset");
 				},
@@ -427,7 +408,7 @@ $(document).ready(function() {
 					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
 					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
 					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-					$("#create_invoice").before().html("<a href='../invoice-add.php' class='btn btn-primary'>Create new invoice</a>");
+					$("#create_invoice").before().html("<a href='" + BASE_URL + "pages/invoice-create.php' class='btn btn-primary'>Create new invoice</a>");
 					$("#create_invoice").remove();
 					$btn.button("reset");
 				},
@@ -614,27 +595,7 @@ $(document).ready(function() {
 
    	}
 
-   	function downloadCSV(action) {
 
-   		jQuery.ajax({
-
-   			url: BASE_URL + 'includes/response.php',
-   			type: 'POST',
-   			data: action,
-   			dataType: 'json',
-   			success: function(data){
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
-				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-			},
-			error: function(data){
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
-				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-			} 
-   		});
-
-   	}
 
    	// login function
 	function actionLogin() {

@@ -20,7 +20,6 @@ class invoicr extends FPDF_rotation
 	var $due;
 	var $from;
 	var $to;
-	var $ship; // ADDED SHIPPING
 	var $items;
 	var $totals;
 	var $badge;
@@ -92,10 +91,6 @@ class invoicr extends FPDF_rotation
 		$this->to = $data;
 	}
 
-	function shipTo($data)
-	{
-		$this->ship = $data;
-	}
 	
 	function setReference($reference)
 	{
@@ -246,47 +241,40 @@ class invoicr extends FPDF_rotation
 			$this->SetTextColor($this->color[0],$this->color[1],$this->color[2]);
 			$this->SetDrawColor($this->color[0],$this->color[1],$this->color[2]);
 			$this->SetFont($this->font,'B',10);
-			$width = ($this->document['w']-$this->margins['l']-$this->margins['r'])/3;
+			$width = ($this->document['w']-$this->margins['l']-$this->margins['r'])/2;
 			if(isset($this->flipflop))
 			{
 				$to = $this->l['to'];
 				$from = $this->l['from'];
-				$ship = $this->l['ship']; // ADDED SHIPPING
 
 				$this->l['to'] = $from;
 				$this->l['from'] = $to;
-				$this->l['ship'] = $from; // ADDED SHIPPING
 
 				$to = $this->to;
 				$from = $this->from;
-				$ship = $this->ship; // ADDED SHIPPING
 
 				$this->to = $from;
 				$this->from = $to;
-				$this->ship = $from; // ADDED SHIPPING
 			}
 			$this->Cell($width,$lineheight,strtoupper($this->l['from']),0,0,'L');
-			$this->Cell($width,$lineheight,strtoupper($this->l['to']),0,0,'L');
-			$this->Cell(0,$lineheight,strtoupper($this->l['ship']),0,0,'L'); // ADDED SHIPPING
+			$this->Cell(0,$lineheight,strtoupper($this->l['to']),0,0,'L');
 			$this->Ln(7);
 			$this->SetLineWidth(0.3);
 			$this->Line($this->margins['l'], $this->GetY(),$this->margins['l']+$width-10, $this->GetY());
-			$this->Line($this->margins['l']+$width, $this->GetY(),$this->margins['l']+$width+$width+$width, $this->GetY());
+			$this->Line($this->margins['l']+$width, $this->GetY(),$this->margins['l']+$width+$width, $this->GetY());
 
 			//Information
 			$this->Ln(5);
 			$this->SetTextColor(50,50,50);
 			$this->SetFont($this->font,'B',10);
 			$this->Cell($width,$lineheight,$this->from[0],0,0,'L');
-			$this->Cell($width,$lineheight,$this->to[0],0,0,'L');
-			$this->Cell(0,$lineheight,$this->ship[0],0,0,'L'); // ADDED SHIPPING
+			$this->Cell(0,$lineheight,$this->to[0],0,0,'L');
 			$this->SetFont($this->font,'',8);
 			$this->SetTextColor(100,100,100);
 			$this->Ln(7);
-			for($i=0; $i<max(count($this->from),count($this->to),count($this->ship)); $i++) { // ADDED SHIPPING
-				$this->Cell($width,$lineheight,iconv("UTF-8", "ISO-8859-1",$this->from[$i]),0,0,'L');
-				$this->Cell($width,$lineheight,iconv("UTF-8", "ISO-8859-1",$this->to[$i]),0,0,'L');
-				$this->Cell(0,$lineheight,iconv("UTF-8", "ISO-8859-1",$this->ship[$i]),0,0,'L'); // ADDED SHIPPING
+			for($i=0; $i<max(count($this->from),count($this->to)); $i++) {
+				$this->Cell($width,$lineheight,iconv("UTF-8", "ISO-8859-1",isset($this->from[$i]) ? $this->from[$i] : ''),0,0,'L');
+				$this->Cell(0,$lineheight,iconv("UTF-8", "ISO-8859-1",isset($this->to[$i]) ? $this->to[$i] : ''),0,0,'L');
 				$this->Ln(5);
 			}	
 			$this->Ln(-6);
@@ -510,7 +498,20 @@ class invoicr extends FPDF_rotation
 	private function setLanguage($language)
 	{
 		$this->language = $language;
-		include('languages/'.$language.'.inc');
+		$l['number'] = 'Reference';
+		$l['date'] = 'Billing date';
+		$l['due'] = 'Due date';
+		$l['to'] = 'Billing to';
+		$l['ship'] = 'Shipping to';
+		$l['from'] = 'Our information';
+		$l['product'] = 'Product';
+		$l['amount'] = 'Amount';
+		$l['price'] = 'Price';
+		$l['discount'] = 'Discount';
+		$l['vat'] = 'Vat';
+		$l['total'] = 'Total';
+		$l['page'] = 'Page';
+		$l['page_of'] = 'of';
 		$this->l = $l;
 	}
 	

@@ -42,7 +42,7 @@ if ($action == 'email_invoice'){
 		$mail->MsgHTML($custom_email);
 	}
 
-	$mail->AddAttachment("./invoices/".$fileId.".pdf"); // attachment
+	$mail->AddAttachment(__DIR__ . "/../invoices/".$fileId.".pdf"); // attachment
 
 	if(!$mail->Send()) {
 		 //if unable to create new record
@@ -57,68 +57,6 @@ if ($action == 'email_invoice'){
 			'message'=> 'Invoice has been successfully send to the customer'
 		));
 	}
-
-}
-// download invoice csv sheet
-if ($action == 'download_csv'){
-
-	header("Content-type: text/csv"); 
-
-	// output any connection error
-	if ($mysqli->connect_error) {
-		die('Error : ('.$mysqli->connect_errno .') '. $mysqli->connect_error);
-	}
- 
-    $file_name = 'invoice-export-'.date('d-m-Y').'.csv';   // file name
-    $file_path = 'downloads/'.$file_name; // file path
-
-	$file = fopen($file_path, "w"); // open a file in write mode
-    chmod($file_path, 0777);    // set the file permission
-
-    $query_table_columns_data = "SELECT * 
-									FROM invoices i
-									JOIN customers c
-									ON c.invoice = i.invoice
-									WHERE i.invoice = c.invoice
-									ORDER BY i.invoice";
-
-    if ($result_column_data = mysqli_query($mysqli, $query_table_columns_data)) {
-
-    	// fetch table fields data
-        while ($column_data = $result_column_data->fetch_row()) {
-
-            $table_column_data = array();
-            foreach($column_data as $data) {
-                $table_column_data[] = $data;
-            }
-
-            // Format array as CSV and write to file pointer
-            fputcsv($file, $table_column_data, ",", '"');
-        }
-
-	}
-
-    //if saving success
-    if ($result_column_data = mysqli_query($mysqli, $query_table_columns_data)) {
-		echo json_encode(array(
-			'status' => 'Success',
-			'message'=> 'CSV has been generated and is available in the /downloads folder for future reference, you can download by <a href="downloads/'.$file_name.'">clicking here</a>.'
-		));
-
-	} else {
-	    //if unable to create new record
-	    echo json_encode(array(
-	    	'status' => 'Error',
-	    	//'message'=> 'There has been an error, please try again.'
-	    	'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
-	    ));
-	}
-
- 
-    // close file pointer
-    fclose($file);
-
-    $mysqli->close();
 
 }
 
@@ -136,13 +74,7 @@ if ($action == 'create_customer'){
 	$customer_postcode = $_POST['customer_postcode']; // customer postcode
 	$customer_phone = $_POST['customer_phone']; // customer phone number
 	
-	//shipping
-	$customer_name_ship = $_POST['customer_name_ship']; // customer name (shipping)
-	$customer_address_1_ship = $_POST['customer_address_1_ship']; // customer address (shipping)
-	$customer_address_2_ship = $_POST['customer_address_2_ship']; // customer address (shipping)
-	$customer_town_ship = $_POST['customer_town_ship']; // customer town (shipping)
-	$customer_county_ship = $_POST['customer_county_ship']; // customer county (shipping)
-	$customer_postcode_ship = $_POST['customer_postcode_ship']; // customer postcode (shipping)
+
 
 	$query = "INSERT INTO store_customers (
 					name,
@@ -152,20 +84,8 @@ if ($action == 'create_customer'){
 					town,
 					county,
 					postcode,
-					phone,
-					name_ship,
-					address_1_ship,
-					address_2_ship,
-					town_ship,
-					county_ship,
-					postcode_ship
+					phone
 				) VALUES (
-					?,
-					?,
-					?,
-					?,
-					?,
-					?,
 					?,
 					?,
 					?,
@@ -185,9 +105,9 @@ if ($action == 'create_customer'){
 
 	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
 	$stmt->bind_param(
-		'ssssssssssssss',
+		'ssssssss',
 		$customer_name,$customer_email,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,
-		$customer_phone,$customer_name_ship,$customer_address_1_ship,$customer_address_2_ship,$customer_town_ship,$customer_county_ship,$customer_postcode_ship);
+		$customer_phone);
 
 	if($stmt->execute()){
 		//if saving success
@@ -238,7 +158,6 @@ if ($action == 'create_invoice'){
 	$custom_email = $_POST['custom_email']; // custom invoice email
 	$invoice_due_date = $_POST['invoice_due_date']; // invoice due date
 	$invoice_subtotal = $_POST['invoice_subtotal']; // invoice sub-total
-	$invoice_shipping = $_POST['invoice_shipping']; // invoice shipping amount
 	$invoice_discount = $_POST['invoice_discount']; // invoice discount
 	$invoice_vat = $_POST['invoice_vat']; // invoice vat
 	$invoice_total = $_POST['invoice_total']; // invoice total
@@ -253,7 +172,6 @@ if ($action == 'create_invoice'){
 					invoice_date, 
 					invoice_due_date, 
 					subtotal, 
-					shipping, 
 					discount, 
 					vat, 
 					total,
@@ -266,7 +184,6 @@ if ($action == 'create_invoice'){
 				  	'".$invoice_date."',
 				  	'".$invoice_due_date."',
 				  	'".$invoice_subtotal."',
-				  	'".$invoice_shipping."',
 				  	'".$invoice_discount."',
 				  	'".$invoice_vat."',
 				  	'".$invoice_total."',
@@ -285,13 +202,7 @@ if ($action == 'create_invoice'){
 					town,
 					county,
 					postcode,
-					phone,
-					name_ship,
-					address_1_ship,
-					address_2_ship,
-					town_ship,
-					county_ship,
-					postcode_ship
+					phone
 				) VALUES (
 					'".$invoice_number."',
 					'".$customer_name."',
@@ -301,13 +212,7 @@ if ($action == 'create_invoice'){
 					'".$customer_town."',
 					'".$customer_county."',
 					'".$customer_postcode."',
-					'".$customer_phone."',
-					'".$customer_name_ship."',
-					'".$customer_address_1_ship."',
-					'".$customer_address_2_ship."',
-					'".$customer_town_ship."',
-					'".$customer_county_ship."',
-					'".$customer_postcode_ship."'
+					'".$customer_phone."'
 				);
 			";
 
@@ -374,8 +279,6 @@ if ($action == 'create_invoice'){
 		$invoice->setFrom(array(COMPANY_NAME,COMPANY_ADDRESS_1,COMPANY_ADDRESS_2,COMPANY_COUNTY,COMPANY_POSTCODE,COMPANY_NUMBER,COMPANY_VAT));
 		//Set to
 		$invoice->setTo(array($customer_name,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,"Phone: ".$customer_phone));
-		//Ship to
-		$invoice->shipTo(array($customer_name_ship,$customer_address_1_ship,$customer_address_2_ship,$customer_town_ship,$customer_county_ship,$customer_postcode_ship,''));
 		//Add items
 		// invoice product items
 		foreach($_POST['invoice_product'] as $key => $value) {
@@ -397,9 +300,7 @@ if ($action == 'create_invoice'){
 		if(!empty($invoice_discount)) {
 			$invoice->addTotal("Discount",$invoice_discount);
 		}
-		if(!empty($invoice_shipping)) {
-			$invoice->addTotal("Delivery",$invoice_shipping);
-		}
+
 		if(ENABLE_VAT == true) {
 			$invoice->addTotal("TAX/VAT ".VAT_RATE."%",$invoice_vat);
 		}
@@ -418,7 +319,7 @@ if ($action == 'create_invoice'){
 		//Set footer note
 		$invoice->setFooternote(FOOTER_NOTE);
 		//Render the PDF
-		$invoice->render('invoices/'.$invoice_number.'.pdf','F');
+		$invoice->render(__DIR__ . '/../invoices/'.$invoice_number.'.pdf','F');
 	} else {
 		// if unable to create invoice
 		echo json_encode(array(
@@ -449,7 +350,7 @@ if($action == 'delete_invoice') {
 	$query .= "DELETE FROM customers WHERE invoice = ".$id.";";
 	$query .= "DELETE FROM invoice_items WHERE invoice = ".$id.";";
 
-	unlink('invoices/'.$id.'.pdf');
+	unlink(__DIR__ . '/../invoices/'.$id.'.pdf');
 
 	if($mysqli -> multi_query($query)) {
 	    //if saving success
@@ -510,15 +411,7 @@ if($action == 'update_customer') {
 				town = ?,
 				county = ?,
 				postcode = ?,
-				phone = ?,
-
-				name_ship = ?,
-				address_1_ship = ?,
-				address_2_ship = ?,
-				town_ship = ?,
-				county_ship = ?,
-				postcode_ship = ?
-
+				phone = ?
 				WHERE id = ?
 
 			";
@@ -531,9 +424,9 @@ if($action == 'update_customer') {
 
 	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
 	$stmt->bind_param(
-		'sssssssssssssss',
+		'sssssssss',
 		$customer_name,$customer_email,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,
-		$customer_phone,$customer_name_ship,$customer_address_1_ship,$customer_address_2_ship,$customer_town_ship,$customer_county_ship,$customer_postcode_ship,$getID);
+		$customer_phone,$getID);
 
 	//execute the query
 	if($stmt->execute()){
@@ -574,7 +467,7 @@ if($action == 'update_invoice') {
 	//$query .= "DELETE FROM customers WHERE invoice = ".$id.";";
 	$query .= "DELETE FROM invoice_items WHERE invoice = ".$id.";";
 
-	unlink('invoices/'.$id.'.pdf');
+	unlink(__DIR__ . '/../invoices/'.$id.'.pdf');
 
 	// invoice customer information
 	// billing
@@ -587,13 +480,6 @@ if($action == 'update_invoice') {
 	$customer_postcode = $_POST['customer_postcode']; // customer postcode
 	$customer_phone = $_POST['customer_phone']; // customer phone number
 	
-	//shipping
-	$customer_name_ship = $_POST['customer_name_ship']; // customer name (shipping)
-	$customer_address_1_ship = $_POST['customer_address_1_ship']; // customer address (shipping)
-	$customer_address_2_ship = $_POST['customer_address_2_ship']; // customer address (shipping)
-	$customer_town_ship = $_POST['customer_town_ship']; // customer town (shipping)
-	$customer_county_ship = $_POST['customer_county_ship']; // customer county (shipping)
-	$customer_postcode_ship = $_POST['customer_postcode_ship']; // customer postcode (shipping)
 
 	// invoice details
 	$invoice_number = $_POST['invoice_id']; // invoice number
@@ -601,7 +487,6 @@ if($action == 'update_invoice') {
 	$invoice_date = $_POST['invoice_date']; // invoice date
 	$invoice_due_date = $_POST['invoice_due_date']; // invoice due date
 	$invoice_subtotal = $_POST['invoice_subtotal']; // invoice sub-total
-	$invoice_shipping = $_POST['invoice_shipping']; // invoice shipping amount
 	$invoice_discount = $_POST['invoice_discount']; // invoice discount
 	$invoice_vat = $_POST['invoice_vat']; // invoice vat
 	$invoice_total = $_POST['invoice_total']; // invoice total
@@ -615,7 +500,6 @@ if($action == 'update_invoice') {
 					invoice_date, 
 					invoice_due_date, 
 					subtotal, 
-					shipping, 
 					discount, 
 					vat, 
 					total,
@@ -627,7 +511,6 @@ if($action == 'update_invoice') {
 				  	'".$invoice_date."',
 				  	'".$invoice_due_date."',
 				  	'".$invoice_subtotal."',
-				  	'".$invoice_shipping."',
 				  	'".$invoice_discount."',
 				  	'".$invoice_vat."',
 				  	'".$invoice_total."',
@@ -647,13 +530,7 @@ if($action == 'update_invoice') {
 					town,
 					county,
 					postcode,
-					phone,
-					name_ship,
-					address_1_ship,
-					address_2_ship,
-					town_ship,
-					county_ship,
-					postcode_ship
+					phone
 				) VALUES (
 					'".$invoice_number."',
 					'".$custom_email."',
@@ -664,13 +541,7 @@ if($action == 'update_invoice') {
 					'".$customer_town."',
 					'".$customer_county."',
 					'".$customer_postcode."',
-					'".$customer_phone."',
-					'".$customer_name_ship."',
-					'".$customer_address_1_ship."',
-					'".$customer_address_2_ship."',
-					'".$customer_town_ship."',
-					'".$customer_county_ship."',
-					'".$customer_postcode_ship."'
+					'".$customer_phone."'
 				);
 			";
 
@@ -736,8 +607,6 @@ if($action == 'update_invoice') {
 		$invoice->setFrom(array(COMPANY_NAME,COMPANY_ADDRESS_1,COMPANY_ADDRESS_2,COMPANY_COUNTY,COMPANY_POSTCODE,COMPANY_NUMBER,COMPANY_VAT));
 		//Set to
 		$invoice->setTo(array($customer_name,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,"Phone: ".$customer_phone));
-		//Ship to
-		$invoice->shipTo(array($customer_name_ship,$customer_address_1_ship,$customer_address_2_ship,$customer_town_ship,$customer_county_ship,$customer_postcode_ship,''));
 		//Add items
 		// invoice product items
 		foreach($_POST['invoice_product'] as $key => $value) {
@@ -759,9 +628,7 @@ if($action == 'update_invoice') {
 		if(!empty($invoice_discount)) {
 			$invoice->addTotal("Discount",$invoice_discount);
 		}
-		if(!empty($invoice_shipping)) {
-			$invoice->addTotal("Delivery",$invoice_shipping);
-		}
+
 		if(ENABLE_VAT == true) {
 			$invoice->addTotal("TAX/VAT ".VAT_RATE."%",$invoice_vat);
 		}
@@ -780,7 +647,7 @@ if($action == 'update_invoice') {
 		//Set footer note
 		$invoice->setFooternote(FOOTER_NOTE);
 		//Render the PDF
-		$invoice->render('invoices/'.$invoice_number.'.pdf','F');
+		$invoice->render(__DIR__ . '/../invoices/'.$invoice_number.'.pdf','F');
 
 	} else {
 	    //if unable to create new record

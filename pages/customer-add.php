@@ -19,7 +19,7 @@ include('../includes/header.php');
     
     <div class="row g-4">
         <!-- Customer Information -->
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Customer Information</h5>
@@ -52,37 +52,6 @@ include('../includes/header.php');
                         </div>
                         <div class="col-md-6">
                             <input type="text" class="form-control required" name="customer_phone" id="invoice_phone" placeholder="Phone Number" tabindex="8">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Shipping Information -->
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white text-end">
-                    <h5 class="mb-0">Shipping Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_name_ship" id="customer_name_ship" placeholder="Enter name" tabindex="9">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_address_1_ship" id="customer_address_1_ship" placeholder="Address 1" tabindex="10">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" name="customer_address_2_ship" id="customer_address_2_ship" placeholder="Address 2" tabindex="11">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_town_ship" id="customer_town_ship" placeholder="Town/City" tabindex="12">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_county_ship" id="customer_county_ship" placeholder="Country" tabindex="13">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_postcode_ship" id="customer_postcode_ship" placeholder="Postcode" tabindex="14">
                         </div>
                     </div>
                 </div>

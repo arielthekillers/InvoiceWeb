@@ -10,7 +10,7 @@ define('DATABASE_USER', 'root');
 define('DATABASE_PASS', '');
 
 // COMPANY INFORMATION (Info Pembuat Invoice)
-define('COMPANY_LOGO', 'images/logo.png');
+define('COMPANY_LOGO', __DIR__ . '/../assets/images/logo.png');
 define('COMPANY_LOGO_WIDTH', '300');
 define('COMPANY_LOGO_HEIGHT', '90');
 define('COMPANY_NAME','Ahmad Darul Arqam');

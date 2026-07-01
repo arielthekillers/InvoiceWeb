@@ -30,13 +30,7 @@ if($result) {
 		$customer_postcode = $row['postcode']; // customer postcode
 		$customer_phone = $row['phone']; // customer phone number
 		
-		//shipping
-		$customer_name_ship = $row['name_ship']; // customer name (shipping)
-		$customer_address_1_ship = $row['address_1_ship']; // customer address (shipping)
-		$customer_address_2_ship = $row['address_2_ship']; // customer address (shipping)
-		$customer_town_ship = $row['town_ship']; // customer town (shipping)
-		$customer_county_ship = $row['county_ship']; // customer county (shipping)
-		$customer_postcode_ship = $row['postcode_ship']; // customer postcode (shipping)
+
 	}
 }
 
@@ -63,7 +57,7 @@ $mysqli->close();
     
     <div class="row g-4">
         <!-- Customer Information -->
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Editing Customer (<?php echo $getID; ?>)</h5>
@@ -96,37 +90,6 @@ $mysqli->close();
                         </div>
                         <div class="col-md-6">
                             <input type="text" class="form-control required" name="customer_phone" id="invoice_phone" placeholder="Phone number" tabindex="8" value="<?php echo $customer_phone; ?>">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Shipping Information -->
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white text-end">
-                    <h5 class="mb-0">Shipping Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_name_ship" id="customer_name_ship" placeholder="Enter name" tabindex="9" value="<?php echo $customer_name_ship; ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_address_1_ship" id="customer_address_1_ship" placeholder="Address 1" tabindex="10" value="<?php echo $customer_address_1_ship; ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" name="customer_address_2_ship" id="customer_address_2_ship" placeholder="Address 2" tabindex="11" value="<?php echo $customer_address_2_ship; ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_town_ship" id="customer_town_ship" placeholder="Town/City" tabindex="12" value="<?php echo $customer_town_ship; ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_county_ship" id="customer_county_ship" placeholder="Country" tabindex="13" value="<?php echo $customer_county_ship; ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_postcode_ship" id="customer_postcode_ship" placeholder="Postcode" tabindex="14" value="<?php echo $customer_postcode_ship; ?>">
                         </div>
                     </div>
                 </div>
