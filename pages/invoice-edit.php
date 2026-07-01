@@ -142,9 +142,9 @@ $mysqli->close();
                     <td>
                         <div class="d-flex align-items-center">
                             <a href="#" class="btn btn-danger btn-sm delete-row me-2"><i class="bi bi-x-lg"></i></a>
-                            <input type="text" class="form-control invoice_product" name="invoice_product[]"
-                                   placeholder="Masukkan deskripsi pekerjaan/jasa"
-                                   value="<?php echo htmlspecialchars($item_product); ?>">
+                            <textarea class="form-control invoice_product" name="invoice_product[]"
+                                      placeholder="Masukkan deskripsi pekerjaan/jasa"
+                                      rows="1" style="resize: vertical; min-height: 38px; height: auto;"><?php echo htmlspecialchars($item_product); ?></textarea>
                         </div>
                     </td>
                     <td>

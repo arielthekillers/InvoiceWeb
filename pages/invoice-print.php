@@ -63,37 +63,37 @@ $mysqli->close();
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 14px;
+            font-size: 13px; /* Smaller font */
             color: #000;
-            line-height: 1.5;
+            line-height: 1.4;
             margin: 0;
-            padding: 40px;
+            padding: 30px; /* Reduced padding */
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .font-weight-bold { font-weight: bold; }
         
-        .header { margin-bottom: 40px; }
+        .header { margin-bottom: 30px; } /* Reduced margin */
         .header h1 {
-            font-size: 24px;
+            font-size: 20px; /* Smaller header */
             margin: 0;
             letter-spacing: 1px;
         }
         .header p {
             margin: 2px 0;
             color: #555;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .info-section {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 15px; /* Reduced margin */
         }
         .info-block { width: 48%; }
         .info-block h4 {
-            font-size: 14px;
-            margin: 0 0 10px 0;
+            font-size: 13px;
+            margin: 0 0 8px 0;
         }
         .info-table {
             width: 100%;
@@ -109,17 +109,18 @@ $mysqli->close();
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px; /* Reduced margin */
         }
         .items-table th, .items-table td {
             border: 1px solid #000;
-            padding: 8px 12px;
+            padding: 6px 10px; /* Reduced padding */
         }
         .items-table th {
             background-color: #a0a0a0;
             color: #fff;
             text-align: left;
             font-weight: bold;
+            font-size: 13px;
         }
         .items-table th.text-center { text-align: center; }
         
@@ -138,11 +139,11 @@ $mysqli->close();
         }
 
         .rekening {
-            margin-top: 30px;
+            margin-top: 20px; /* Reduced margin */
         }
         .rekening h4 {
-            margin: 0 0 5px 0;
-            font-size: 14px;
+            margin: 0 0 3px 0;
+            font-size: 13px;
         }
         .rekening p {
             margin: 0;
@@ -150,8 +151,8 @@ $mysqli->close();
         }
 
         .footer-note {
-            margin-top: 60px;
-            font-size: 13px;
+            margin-top: 30px; /* Reduced margin */
+            font-size: 12px;
             color: #666;
         }
 
@@ -165,7 +166,7 @@ $mysqli->close();
         }
     </style>
 </head>
-<body onload="window.print()">
+<body>
 
     <div class="header text-center">
         <h1>INVOICE</h1>
@@ -266,5 +267,17 @@ $mysqli->close();
         Catatan : Invoice ini sah tanpa tanda tangan basah atau materai.
     </div>
 
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+        window.addEventListener("afterprint", function(event) {
+            window.close();
+            // Fallback jika browser memblokir penutupan window (misal bukan dibuka via script)
+            setTimeout(function() {
+                window.history.back();
+            }, 500);
+        });
+    </script>
 </body>
 </html>
