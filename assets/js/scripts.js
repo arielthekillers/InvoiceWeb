@@ -11,15 +11,17 @@ $(document).ready(function() {
 
 
 	// password strength
-	var options = {
-        onLoad: function () {
-            $('#messages').text('Start typing password');
-        },
-        onKeyUp: function (evt) {
-            $(evt.target).pwstrength("outputErrorList");
-        }
-    };
-    $('#password').pwstrength(options);
+	if ($('#password').length && typeof $.fn.pwstrength !== 'undefined') {
+		var options = {
+	        onLoad: function () {
+	            $('#messages').text('Start typing password');
+	        },
+	        onKeyUp: function (evt) {
+	            $(evt.target).pwstrength("outputErrorList");
+	        }
+	    };
+	    $('#password').pwstrength(options);
+	}
 
 	// add user
 	$("#action_add_user").click(function(e) {
@@ -184,18 +186,32 @@ $(document).ready(function() {
 		updateInvoice();
 	});
 
-	// enable date pickers for due date and invoice date
-	var dateFormat = $(this).attr('data-vat-rate');
-	$('#invoice_date, #invoice_due_date').datetimepicker({
-		showClose: false,
-		format: dateFormat
-	});
+	// ========== Date Picker ===========
+	if ($('#invoice_date_raw').length) {
+		$('#invoice_date_raw').on('change', function() {
+			var rawVal = $(this).val(); // YYYY-MM-DD
+			if (rawVal) {
+				var parts = rawVal.split('-');
+				if (parts.length === 3) {
+					var formatted = parts[2] + '/' + parts[1] + '/' + parts[0];
+					$('#invoice_date_formatted').val(formatted);
+					
+					// If on create page, fetch next invoice number
+					if ($('#action_create_invoice').length) {
+						getNextInvoiceNumber(formatted);
+					}
+				}
+			} else {
+				$('#invoice_date_formatted').val('');
+			}
+		});
 
-	// copy customer details to shipping
-    $('input.copy-input').on("input", function () {
-        $('input#' + this.id + "_ship").val($(this).val());
-    });
-    
+		// Trigger change on load if value exists to populate hidden field
+		if ($('#invoice_date_raw').val()) {
+			$('#invoice_date_raw').trigger('change');
+		}
+	}
+
     // remove product row
     $('#invoice_table').on('click', ".delete-row", function(e) {
     	e.preventDefault();
@@ -203,106 +219,97 @@ $(document).ready(function() {
         calculateTotal();
     });
 
-    // add new product row on invoice
-    var cloned = $('#invoice_table tr:last').clone();
+    // add new product row - creates a fresh empty row with FOC checkbox
     $(".add-row").click(function(e) {
         e.preventDefault();
-        cloned.clone().appendTo('#invoice_table'); 
+        var newRow = '<tr>' +
+            '<td><div class="d-flex align-items-center">' +
+            '<a href="#" class="btn btn-danger btn-sm delete-row me-2"><i class="bi bi-x-lg"></i></a>' +
+            '<input type="text" class="form-control invoice_product" name="invoice_product[]" placeholder="Masukkan deskripsi pekerjaan/jasa">' +
+            '</div></td>' +
+            '<td><div class="input-group">' +
+            '<span class="input-group-text">Rp</span>' +
+            '<input type="number" class="form-control calculate invoice_product_price required text-end" name="invoice_product_price[]" placeholder="0" min="0">' +
+            '</div></td>' +
+            '<td class="text-center">' +
+            '<div class="form-check d-flex justify-content-center align-items-center gap-1">' +
+            '<input type="hidden" name="invoice_product_foc[]" value="0" class="foc-hidden">' +
+            '<input type="checkbox" class="form-check-input foc-checkbox" title="Gratis / Free of Charge">' +
+            '<label class="form-check-label small text-muted">Gratis</label>' +
+            '</div></td>' +
+            '</tr>';
+        $('#invoice_table tbody').append(newRow);
     });
     
     calculateTotal();
     
+    // Recalculate when any price input changes
     $('#invoice_table').on('input', '.calculate', function () {
-	    updateTotals(this);
 	    calculateTotal();
 	});
 
-	$('#invoice_totals').on('input', '.calculate', function () {
-	    calculateTotal();
+	// FOC checkbox per item: when checked show strikethrough, when unchecked restore
+	$(document).on('change', '.foc-checkbox', function() {
+		var $row = $(this).closest('tr');
+		var $priceInput = $row.find('.invoice_product_price');
+		var $hiddenFoc  = $row.find('.foc-hidden');
+		if ($(this).is(':checked')) {
+			// Save original price then zero it visually
+			$priceInput.attr('data-original-price', $priceInput.val());
+			$priceInput.closest('.input-group').css('opacity', '0.4');
+			if ($hiddenFoc.length) $hiddenFoc.val('1');
+		} else {
+			$priceInput.closest('.input-group').css('opacity', '1');
+			if ($hiddenFoc.length) $hiddenFoc.val('0');
+		}
+		calculateTotal();
 	});
-
-	$('#invoice_product').on('input', '.calculate', function () {
-	    calculateTotal();
-	});
-
-	$('.remove_vat').on('change', function() {
-        calculateTotal();
-    });
 
 	function updateTotals(elem) {
-
-        var tr = $(elem).closest('tr'),
-            quantity = $('[name="invoice_product_qty[]"]', tr).val(),
-	        price = $('[name="invoice_product_price[]"]', tr).val(),
-            isPercent = $('[name="invoice_product_discount[]"]', tr).val().indexOf('%') > -1,
-            percent = $.trim($('[name="invoice_product_discount[]"]', tr).val().replace('%', '')),
-	        subtotal = parseInt(quantity) * parseFloat(price);
-
-        if(percent && $.isNumeric(percent) && percent !== 0) {
-            if(isPercent){
-                subtotal = subtotal - ((parseFloat(percent) / 100) * subtotal);
-            } else {
-                subtotal = subtotal - parseFloat(percent);
-            }
-        } else {
-            $('[name="invoice_product_discount[]"]', tr).val('');
-        }
-
-	    $('.calculate-sub', tr).val(subtotal.toFixed(2));
+		// No longer needed as we don't have qty or discount per item
 	}
 
 	function calculateTotal() {
-	    
-	    var grandTotal = 0,
-	    	disc = 0,
-	    	c_ship = parseInt($('.calculate.shipping').val()) || 0;
+	    var grandTotal = 0;
 
 	    $('#invoice_table tbody tr').each(function() {
-            var c_sbt = $('.calculate-sub', this).val(),
-                quantity = $('[name="invoice_product_qty[]"]', this).val(),
-	            price = $('[name="invoice_product_price[]"]', this).val() || 0,
-                subtotal = parseInt(quantity) * parseFloat(price);
-            
-            grandTotal += parseFloat(c_sbt);
-            disc += subtotal - parseFloat(c_sbt);
+	    	var $focCheck = $(this).find('.foc-checkbox');
+	    	var isFoc = $focCheck.is(':checked');
+	    	if (!isFoc) {
+	        	var price = $(this).find('[name="invoice_product_price[]"]').val() || 0;
+	            grandTotal += parseFloat(price);
+	    	}
 	    });
 
-        // VAT, DISCOUNT, SHIPPING, TOTAL, SUBTOTAL:
-	    var subT = parseFloat(grandTotal),
-	    	finalTotal = parseFloat(grandTotal + c_ship),
-	    	vat = parseInt($('.invoice-vat').attr('data-vat-rate'));
+	    var finalTotal = parseFloat(grandTotal);
 
-	    $('.invoice-sub-total').text(subT.toFixed(2));
-	    $('#invoice_subtotal').val(subT.toFixed(2));
-        $('.invoice-discount').text(disc.toFixed(2));
-        $('#invoice_discount').val(disc.toFixed(2));
+        // Format with thousand separator
+        var formatted = Math.round(finalTotal).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        $('.invoice-total').text(formatted);
+        $('#invoice_total').val(Math.round(finalTotal));
+	}
 
-        if($('.invoice-vat').attr('data-enable-vat') === '1') {
-
-	        if($('.invoice-vat').attr('data-vat-method') === '1') {
-		        $('.invoice-vat').text(((vat / 100) * finalTotal).toFixed(2));
-		        $('#invoice_vat').val(((vat / 100) * finalTotal).toFixed(2));
-	            $('.invoice-total').text((finalTotal).toFixed(2));
-	            $('#invoice_total').val((finalTotal).toFixed(2));
-	        } else {
-	            $('.invoice-vat').text(((vat / 100) * finalTotal).toFixed(2));
-	            $('#invoice_vat').val(((vat / 100) * finalTotal).toFixed(2));
-		        $('.invoice-total').text((finalTotal + ((vat / 100) * finalTotal)).toFixed(2));
-		        $('#invoice_total').val((finalTotal + ((vat / 100) * finalTotal)).toFixed(2));
-	        }
-		} else {
-			$('.invoice-total').text((finalTotal).toFixed(2));
-			$('#invoice_total').val((finalTotal).toFixed(2));
-		}
-
-		// remove vat
-    	if($('input.remove_vat').is(':checked')) {
-	        $('.invoice-vat').text("0.00");
-	        $('#invoice_vat').val("0.00");
-            $('.invoice-total').text((finalTotal).toFixed(2));
-            $('#invoice_total').val((finalTotal).toFixed(2));
-	    }
-
+	// AJAX: get next invoice number based on selected date
+	function getNextInvoiceNumber(dateStr) {
+		$.ajax({
+			url: BASE_URL + 'includes/response.php',
+			type: 'POST',
+			data: {
+				action: 'get_invoice_number',
+				date: dateStr
+			},
+			dataType: 'json',
+			success: function(data) {
+				if (data.status === 'Success') {
+					$('#invoice_id').val(data.invoice_number);
+				} else {
+					console.error('get_invoice_number failed:', data);
+				}
+			},
+			error: function(xhr, status, error) {
+				console.error('AJAX get_invoice_number error:', status, error, xhr.responseText);
+			}
+		});
 	}
 
 	function actionAddUser() {

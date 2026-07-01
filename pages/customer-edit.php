@@ -65,31 +65,14 @@ $mysqli->close();
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <input type="text" class="form-control copy-input required" name="customer_name" id="customer_name" placeholder="Enter name" tabindex="1" value="<?php echo $customer_name; ?>">
+                            <input type="text" class="form-control required" name="customer_name" id="customer_name" placeholder="Enter name" tabindex="1" value="<?php echo $customer_name; ?>">
                         </div>
                         <div class="col-md-6">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" class="form-control copy-input required" name="customer_email" id="customer_email" placeholder="E-mail address" tabindex="2" value="<?php echo $customer_email; ?>">
-                            </div>
+                            <input type="text" class="form-control required" name="customer_address_1" id="customer_address_1" placeholder="Address" tabindex="2" value="<?php echo $customer_address_1; ?>">
                         </div>
+
                         <div class="col-md-6">
-                            <input type="text" class="form-control copy-input required" name="customer_address_1" id="customer_address_1" placeholder="Address 1" tabindex="3" value="<?php echo $customer_address_1; ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control copy-input" name="customer_address_2" id="customer_address_2" placeholder="Address 2" tabindex="4" value="<?php echo $customer_address_2; ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control copy-input required" name="customer_town" id="customer_town" placeholder="Town/City" tabindex="5" value="<?php echo $customer_town; ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control copy-input required" name="customer_county" id="customer_county" placeholder="Country" tabindex="6" value="<?php echo $customer_county; ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control copy-input required" name="customer_postcode" id="customer_postcode" placeholder="Postcode" tabindex="7" value="<?php echo $customer_postcode; ?>">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_phone" id="invoice_phone" placeholder="Phone number" tabindex="8" value="<?php echo $customer_phone; ?>">
+                            <input type="text" class="form-control required" name="customer_phone" id="invoice_phone" placeholder="Phone number" tabindex="3" value="<?php echo $customer_phone; ?>">
                         </div>
                     </div>
                 </div>

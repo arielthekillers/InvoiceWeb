@@ -33,7 +33,6 @@ function getInvoices() {
 				<th>Invoice</th>
 				<th>Customer</th>
 				<th>Issue Date</th>
-				<th>Due Date</th>
 				<th>Type</th>
 				<th>Status</th>
 				<th>Actions</th>
@@ -47,7 +46,6 @@ function getInvoices() {
 					<td>'.$row["invoice"].'</td>
 					<td>'.$row["name"].'</td>
 				    <td>'.$row["invoice_date"].'</td>
-				    <td>'.$row["invoice_due_date"].'</td>
 				    <td>'.$row["invoice_type"].'</td>
 				';
 
@@ -63,8 +61,7 @@ function getInvoices() {
 				    <td>
                         <div class="d-flex gap-1">
                             <a href="invoice-edit.php?id='.$row["invoice"].'" class="btn btn-light btn-sm text-primary border-0" title="Edit"><i class="bi bi-pencil"></i></a> 
-                            <a href="#" data-invoice-id="'.$row['invoice'].'" data-email="'.$row['email'].'" data-invoice-type="'.$row['invoice_type'].'" data-custom-email="'.$row['custom_email'].'" class="btn btn-light btn-sm text-success border-0 email-invoice" title="Email"><i class="bi bi-envelope"></i></a> 
-                            <a href="' . BASE_URL . 'invoices/'.$row["invoice"].'.pdf" class="btn btn-light btn-sm text-info border-0" target="_blank" title="Download"><i class="bi bi-download"></i></a> 
+                            <a href="invoice-print.php?id='.$row["invoice"].'" class="btn btn-light btn-sm text-info border-0" target="_blank" title="Print"><i class="bi bi-printer"></i></a> 
                             <a data-invoice-id="'.$row['invoice'].'" class="btn btn-light btn-sm text-danger border-0 delete-invoice" title="Delete"><i class="bi bi-trash"></i></a>
                         </div>
                     </td>
@@ -220,7 +217,38 @@ function popCustomersList() {
 
 }
 
+// populate customers as select options for invoice forms
+function popCustomersSelect() {
 
+	// Connect to the database
+	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+	// output any connection error
+	if ($mysqli->connect_error) {
+	    die('Error : ('.$mysqli->connect_errno .') '. $mysqli->connect_error);
+	}
+
+	// the query
+	$query = "SELECT * FROM store_customers ORDER BY name ASC";
+
+	// mysqli select query
+	$results = $mysqli->query($query);
+
+	if($results) {
+		while($row = $results->fetch_assoc()) {
+		    print '<option value="'.$row['id'].'">'.$row["name"].'</option>';
+		}
+	} else {
+		echo '<option disabled>No customers found</option>';
+	}
+
+	// Frees the memory associated with a result
+	$results->free();
+
+	// close connection 
+	$mysqli->close();
+
+}
 
 // get user list
 function getUsers() {

@@ -3,8 +3,8 @@
 
 include_once(__DIR__ . '/config.php');
 
-// show PHP errors
-ini_set('display_errors', 1);
+// hide PHP errors in JSON response
+ini_set('display_errors', 0);
 
 // output any connection error
 if ($mysqli->connect_error) {
@@ -12,6 +12,30 @@ if ($mysqli->connect_error) {
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : "";
+
+// ===== Get next invoice number based on selected date =====
+if ($action == 'get_invoice_number') {
+	header('Content-Type: application/json');
+	$dateStr = $_POST['date'] ?? ''; // expected DD/MM/YYYY
+	$parts = explode('/', trim($dateStr));
+	if (count($parts) == 3) {
+		$day   = str_pad(intval($parts[0]), 2, '0', STR_PAD_LEFT);
+		$month = str_pad(intval($parts[1]), 2, '0', STR_PAD_LEFT);
+		$year  = substr($parts[2], -2); // last 2 digits e.g. "26" from "2026"
+		$prefix = INVOICE_PREFIX . $day . $month . $year; // e.g. INV210426
+		$like   = $prefix . '%';
+		$stmt = $mysqli->prepare("SELECT COUNT(*) AS cnt FROM invoices WHERE invoice LIKE ?");
+		$stmt->bind_param('s', $like);
+		$stmt->execute();
+		$res = $stmt->get_result()->fetch_assoc();
+		$seq = intval($res['cnt']) + 1;
+		$invoice_number = $prefix . str_pad($seq, 3, '0', STR_PAD_LEFT);
+		echo json_encode(['status' => 'Success', 'invoice_number' => $invoice_number]);
+	} else {
+		echo json_encode(['status' => 'Error', 'message' => 'Format tanggal tidak valid']);
+	}
+	exit;
+}
 
 if ($action == 'email_invoice'){
 
@@ -65,14 +89,14 @@ if ($action == 'create_customer'){
 
 	// invoice customer information
 	// billing
-	$customer_name = $_POST['customer_name']; // customer name
-	$customer_email = $_POST['customer_email']; // customer email
-	$customer_address_1 = $_POST['customer_address_1']; // customer address
-	$customer_address_2 = $_POST['customer_address_2']; // customer address
-	$customer_town = $_POST['customer_town']; // customer town
-	$customer_county = $_POST['customer_county']; // customer county
-	$customer_postcode = $_POST['customer_postcode']; // customer postcode
-	$customer_phone = $_POST['customer_phone']; // customer phone number
+	$customer_name = $_POST['customer_name'] ?? ''; // customer name
+	$customer_email = $_POST['customer_email'] ?? ''; // customer email
+	$customer_address_1 = $_POST['customer_address_1'] ?? ''; // customer address
+	$customer_address_2 = $_POST['customer_address_2'] ?? ''; // customer address
+	$customer_town = $_POST['customer_town'] ?? ''; // customer town
+	$customer_county = $_POST['customer_county'] ?? ''; // customer county
+	$customer_postcode = $_POST['customer_postcode'] ?? ''; // customer postcode
+	$customer_phone = $_POST['customer_phone'] ?? ''; // customer phone number
 	
 
 
@@ -134,36 +158,54 @@ if ($action == 'create_invoice'){
 
 	// invoice customer information
 	// billing
-	$customer_name = $_POST['customer_name']; // customer name
-	$customer_email = $_POST['customer_email']; // customer email
-	$customer_address_1 = $_POST['customer_address_1']; // customer address
-	$customer_address_2 = $_POST['customer_address_2']; // customer address
-	$customer_town = $_POST['customer_town']; // customer town
-	$customer_county = $_POST['customer_county']; // customer county
-	$customer_postcode = $_POST['customer_postcode']; // customer postcode
-	$customer_phone = $_POST['customer_phone']; // customer phone number
-	
-	//shipping
-	$customer_name_ship = $_POST['customer_name_ship']; // customer name (shipping)
-	$customer_address_1_ship = $_POST['customer_address_1_ship']; // customer address (shipping)
-	$customer_address_2_ship = $_POST['customer_address_2_ship']; // customer address (shipping)
-	$customer_town_ship = $_POST['customer_town_ship']; // customer town (shipping)
-	$customer_county_ship = $_POST['customer_county_ship']; // customer county (shipping)
-	$customer_postcode_ship = $_POST['customer_postcode_ship']; // customer postcode (shipping)
+	$customer_id = $_POST['customer'] ?? '';
+	$customer_name = '';
+	$customer_email = '';
+	$customer_address_1 = '';
+	$customer_address_2 = '';
+	$customer_town = '';
+	$customer_county = '';
+	$customer_postcode = '';
+	$customer_phone = '';
 
-	// invoice details
+	if(!empty($customer_id)) {
+		$stmt_cust = $mysqli->prepare("SELECT * FROM store_customers WHERE id = ?");
+		$stmt_cust->bind_param("i", $customer_id);
+		$stmt_cust->execute();
+		$res_cust = $stmt_cust->get_result();
+		if($row_cust = $res_cust->fetch_assoc()) {
+			$customer_name = $row_cust['name'];
+			$customer_email = $row_cust['email'];
+			$customer_address_1 = $row_cust['address_1'];
+			$customer_address_2 = $row_cust['address_2'];
+			$customer_town = $row_cust['town'];
+			$customer_county = $row_cust['county'];
+			$customer_postcode = $row_cust['postcode'];
+			$customer_phone = $row_cust['phone'];
+		}
+		$stmt_cust->close();
+	}
 	$invoice_number = $_POST['invoice_id']; // invoice number
-	$custom_email = $_POST['custom_email']; // invoice custom email body
+	$custom_email = $_POST['custom_email'] ?? ''; // invoice custom email body
 	$invoice_date = $_POST['invoice_date']; // invoice date
-	$custom_email = $_POST['custom_email']; // custom invoice email
-	$invoice_due_date = $_POST['invoice_due_date']; // invoice due date
-	$invoice_subtotal = $_POST['invoice_subtotal']; // invoice sub-total
-	$invoice_discount = $_POST['invoice_discount']; // invoice discount
-	$invoice_vat = $_POST['invoice_vat']; // invoice vat
-	$invoice_total = $_POST['invoice_total']; // invoice total
-	$invoice_notes = $_POST['invoice_notes']; // Invoice notes
-	$invoice_type = $_POST['invoice_type']; // Invoice type
-	$invoice_status = $_POST['invoice_status']; // Invoice status
+	$invoice_due_date = $_POST['invoice_due_date'] ?? ''; // invoice due date
+	
+	// Per-item FOC: FOC items contribute 0 to total, their original price saved in 'price' column
+	$invoice_subtotal = 0;
+	if (isset($_POST['invoice_product_price'])) {
+		foreach($_POST['invoice_product_price'] as $k => $price) {
+			$is_foc = isset($_POST['invoice_product_foc'][$k]) && $_POST['invoice_product_foc'][$k] == '1';
+			if (!$is_foc) {
+				$invoice_subtotal += floatval($price);
+			}
+		}
+	}
+	$invoice_discount = 0;
+	$invoice_total = $invoice_subtotal;
+	$invoice_vat = 0;
+	$invoice_notes = $_POST['invoice_notes'] ?? ''; // Invoice notes
+	$invoice_type = $_POST['invoice_type'] ?? 'invoice'; // Invoice type
+	$invoice_status = $_POST['invoice_status'] ?? 'open'; // Invoice status
 
 	// insert invoice into database
 	$query = "INSERT INTO invoices (
@@ -216,17 +258,20 @@ if ($action == 'create_invoice'){
 				);
 			";
 
-	// invoice product items
+	// invoice product items - per-item FOC support
+	// FOC checkboxes are sent as indexed: invoice_product_foc[0]=1, invoice_product_foc[2]=1, etc.
+	// Non-FOC items won't have their index in the array
 	foreach($_POST['invoice_product'] as $key => $value) {
-	    $item_product = $value;
-	    // $item_description = $_POST['invoice_product_desc'][$key];
-	    $item_qty = $_POST['invoice_product_qty'][$key];
-	    $item_price = $_POST['invoice_product_price'][$key];
-	    $item_discount = $_POST['invoice_product_discount'][$key];
-	    $item_subtotal = $_POST['invoice_product_sub'][$key];
+	    $item_product  = $mysqli->real_escape_string($value);
+	    $item_qty      = 1;
+	    $item_price    = floatval($_POST['invoice_product_price'][$key]);
+	    $is_foc        = isset($_POST['invoice_product_foc'][$key]) && $_POST['invoice_product_foc'][$key] == '1';
+	    // Store original price in 'price', 0 in 'subtotal' for FOC items
+	    // Store FOC flag: discount = item_price means FOC (used for detection on edit)
+	    $item_discount = $is_foc ? $item_price : 0;
+	    $item_subtotal = $is_foc ? 0 : $item_price;
 
-	    // insert invoice items into database
-		$query .= "INSERT INTO invoice_items (
+	    $query .= "INSERT INTO invoice_items (
 				invoice,
 				product,
 				qty,
@@ -242,7 +287,6 @@ if ($action == 'create_invoice'){
 				'".$item_subtotal."'
 			);
 		";
-
 	}
 
 	header('Content-Type: application/json');
@@ -255,71 +299,6 @@ if ($action == 'create_invoice'){
 			'message' => 'Invoice has been created successfully!'
 		));
 
-		//Set default date timezone
-		date_default_timezone_set(TIMEZONE);
-		//Include Invoicr class
-		include('invoice.php');
-		//Create a new instance
-		$invoice = new invoicr("A4",CURRENCY,"en");
-		//Set number formatting
-		$invoice->setNumberFormat('.',',');
-		//Set your logo
-		$invoice->setLogo(COMPANY_LOGO,COMPANY_LOGO_WIDTH,COMPANY_LOGO_HEIGHT);
-		//Set theme color
-		$invoice->setColor(INVOICE_THEME);
-		//Set type
-		$invoice->setType($invoice_type);
-		//Set reference
-		$invoice->setReference($invoice_number);
-		//Set date
-		$invoice->setDate($invoice_date);
-		//Set due date
-		$invoice->setDue($invoice_due_date);
-		//Set from
-		$invoice->setFrom(array(COMPANY_NAME,COMPANY_ADDRESS_1,COMPANY_ADDRESS_2,COMPANY_COUNTY,COMPANY_POSTCODE,COMPANY_NUMBER,COMPANY_VAT));
-		//Set to
-		$invoice->setTo(array($customer_name,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,"Phone: ".$customer_phone));
-		//Add items
-		// invoice product items
-		foreach($_POST['invoice_product'] as $key => $value) {
-		    $item_product = $value;
-		    // $item_description = $_POST['invoice_product_desc'][$key];
-		    $item_qty = $_POST['invoice_product_qty'][$key];
-		    $item_price = $_POST['invoice_product_price'][$key];
-		    $item_discount = $_POST['invoice_product_discount'][$key];
-		    $item_subtotal = $_POST['invoice_product_sub'][$key];
-
-		   	if(ENABLE_VAT == true) {
-		   		$item_vat = (VAT_RATE / 100) * $item_subtotal;
-		   	}
-
-		    $invoice->addItem($item_product,'',$item_qty,$item_vat,$item_price,$item_discount,$item_subtotal);
-		}
-		//Add totals
-		$invoice->addTotal("Total",$invoice_subtotal);
-		if(!empty($invoice_discount)) {
-			$invoice->addTotal("Discount",$invoice_discount);
-		}
-
-		if(ENABLE_VAT == true) {
-			$invoice->addTotal("TAX/VAT ".VAT_RATE."%",$invoice_vat);
-		}
-		$invoice->addTotal("Total Due",$invoice_total,true);
-		//Add Badge
-		$invoice->addBadge($invoice_status);
-		// Customer notes:
-		if(!empty($invoice_notes)) {
-			$invoice->addTitle("Customer Notes");
-			$invoice->addParagraph($invoice_notes);
-		}
-		//Add Title
-		$invoice->addTitle("Payment information");
-		//Add Paragraph
-		$invoice->addParagraph(PAYMENT_DETAILS);
-		//Set footer note
-		$invoice->setFooternote(FOOTER_NOTE);
-		//Render the PDF
-		$invoice->render(__DIR__ . '/../invoices/'.$invoice_number.'.pdf','F');
 	} else {
 		// if unable to create invoice
 		echo json_encode(array(
@@ -384,23 +363,14 @@ if($action == 'update_customer') {
 	$getID = $_POST['id']; // id
 
 	// invoice customer information
-	// billing
-	$customer_name = $_POST['customer_name']; // customer name
-	$customer_email = $_POST['customer_email']; // customer email
-	$customer_address_1 = $_POST['customer_address_1']; // customer address
-	$customer_address_2 = $_POST['customer_address_2']; // customer address
-	$customer_town = $_POST['customer_town']; // customer town
-	$customer_county = $_POST['customer_county']; // customer county
-	$customer_postcode = $_POST['customer_postcode']; // customer postcode
-	$customer_phone = $_POST['customer_phone']; // customer phone number
-	
-	//shipping
-	$customer_name_ship = $_POST['customer_name_ship']; // customer name (shipping)
-	$customer_address_1_ship = $_POST['customer_address_1_ship']; // customer address (shipping)
-	$customer_address_2_ship = $_POST['customer_address_2_ship']; // customer address (shipping)
-	$customer_town_ship = $_POST['customer_town_ship']; // customer town (shipping)
-	$customer_county_ship = $_POST['customer_county_ship']; // customer county (shipping)
-	$customer_postcode_ship = $_POST['customer_postcode_ship']; // customer postcode (shipping)
+	$customer_name = $_POST['customer_name'] ?? ''; // customer name
+	$customer_email = $_POST['customer_email'] ?? ''; // customer email
+	$customer_address_1 = $_POST['customer_address_1'] ?? ''; // customer address
+	$customer_address_2 = $_POST['customer_address_2'] ?? ''; // customer address
+	$customer_town = $_POST['customer_town'] ?? ''; // customer town
+	$customer_county = $_POST['customer_county'] ?? ''; // customer county
+	$customer_postcode = $_POST['customer_postcode'] ?? ''; // customer postcode
+	$customer_phone = $_POST['customer_phone'] ?? ''; // customer phone number
 
 	// the query
 	$query = "UPDATE store_customers SET
@@ -463,40 +433,70 @@ if($action == 'update_invoice') {
 	$id = $_POST["update_id"];
 
 	// the query
-	$query = "DELETE FROM invoices WHERE invoice = ".$id.";";
-	//$query .= "DELETE FROM customers WHERE invoice = ".$id.";";
-	$query .= "DELETE FROM invoice_items WHERE invoice = ".$id.";";
+	$query = "DELETE FROM invoices WHERE invoice = '".$mysqli->real_escape_string($id)."';";
+	$query .= "DELETE FROM customers WHERE invoice = '".$mysqli->real_escape_string($id)."';";
+	$query .= "DELETE FROM invoice_items WHERE invoice = '".$mysqli->real_escape_string($id)."';";
 
-	unlink(__DIR__ . '/../invoices/'.$id.'.pdf');
+	$pdf_path = __DIR__ . '/../invoices/'.$id.'.pdf';
+	if (file_exists($pdf_path)) {
+		@unlink($pdf_path);
+	}
 
-	// invoice customer information
-	// billing
-	$customer_name = $_POST['customer_name']; // customer name
-	$customer_email = $_POST['customer_email']; // customer email
-	$customer_address_1 = $_POST['customer_address_1']; // customer address
-	$customer_address_2 = $_POST['customer_address_2']; // customer address
-	$customer_town = $_POST['customer_town']; // customer town
-	$customer_county = $_POST['customer_county']; // customer county
-	$customer_postcode = $_POST['customer_postcode']; // customer postcode
-	$customer_phone = $_POST['customer_phone']; // customer phone number
+	$customer_id = $_POST['customer'] ?? '';
+	$customer_name = '';
+	$customer_email = '';
+	$customer_address_1 = '';
+	$customer_address_2 = '';
+	$customer_town = '';
+	$customer_county = '';
+	$customer_postcode = '';
+	$customer_phone = '';
+
+	if(!empty($customer_id)) {
+		$stmt_cust = $mysqli->prepare("SELECT * FROM store_customers WHERE id = ?");
+		$stmt_cust->bind_param("i", $customer_id);
+		$stmt_cust->execute();
+		$res_cust = $stmt_cust->get_result();
+		if($row_cust = $res_cust->fetch_assoc()) {
+			$customer_name = $row_cust['name'];
+			$customer_email = $row_cust['email'];
+			$customer_address_1 = $row_cust['address_1'];
+			$customer_address_2 = $row_cust['address_2'];
+			$customer_town = $row_cust['town'];
+			$customer_county = $row_cust['county'];
+			$customer_postcode = $row_cust['postcode'];
+			$customer_phone = $row_cust['phone'];
+		}
+		$stmt_cust->close();
+	}
 	
 
-	// invoice details
 	$invoice_number = $_POST['invoice_id']; // invoice number
-	$custom_email = $_POST['custom_email']; // invoice custom email body
+	$custom_email = $_POST['custom_email'] ?? ''; // invoice custom email body
 	$invoice_date = $_POST['invoice_date']; // invoice date
-	$invoice_due_date = $_POST['invoice_due_date']; // invoice due date
-	$invoice_subtotal = $_POST['invoice_subtotal']; // invoice sub-total
-	$invoice_discount = $_POST['invoice_discount']; // invoice discount
-	$invoice_vat = $_POST['invoice_vat']; // invoice vat
-	$invoice_total = $_POST['invoice_total']; // invoice total
-	$invoice_notes = $_POST['invoice_notes']; // Invoice notes
-	$invoice_type = $_POST['invoice_type']; // Invoice type
-	$invoice_status = $_POST['invoice_status']; // Invoice status
+	$invoice_due_date = $_POST['invoice_due_date'] ?? ''; // invoice due date
+	
+	// Per-item FOC: FOC items contribute 0 to total
+	$invoice_subtotal = 0;
+	if (isset($_POST['invoice_product_price'])) {
+		foreach($_POST['invoice_product_price'] as $k => $price) {
+			$is_foc = isset($_POST['invoice_product_foc'][$k]) && $_POST['invoice_product_foc'][$k] == '1';
+			if (!$is_foc) {
+				$invoice_subtotal += floatval($price);
+			}
+		}
+	}
+	$invoice_discount = 0;
+	$invoice_total = $invoice_subtotal;
+	$invoice_vat = 0;
+	$invoice_notes = $_POST['invoice_notes'] ?? '';
+	$invoice_type = $_POST['invoice_type'] ?? 'invoice';
+	$invoice_status = $_POST['invoice_status'] ?? 'open';
 
 	// insert invoice into database
 	$query .= "INSERT INTO invoices (
 					invoice, 
+					custom_email,
 					invoice_date, 
 					invoice_due_date, 
 					subtotal, 
@@ -508,6 +508,7 @@ if($action == 'update_invoice') {
 					status
 				) VALUES (
 				  	'".$invoice_number."',
+				  	'".$custom_email."',
 				  	'".$invoice_date."',
 				  	'".$invoice_due_date."',
 				  	'".$invoice_subtotal."',
@@ -522,7 +523,6 @@ if($action == 'update_invoice') {
 	// insert customer details into database
 	$query .= "INSERT INTO customers (
 					invoice,
-					custom_email,
 					name,
 					email,
 					address_1,
@@ -533,7 +533,6 @@ if($action == 'update_invoice') {
 					phone
 				) VALUES (
 					'".$invoice_number."',
-					'".$custom_email."',
 					'".$customer_name."',
 					'".$customer_email."',
 					'".$customer_address_1."',
@@ -545,17 +544,16 @@ if($action == 'update_invoice') {
 				);
 			";
 
-	// invoice product items
+	// invoice product items - per-item FOC support
 	foreach($_POST['invoice_product'] as $key => $value) {
-	    $item_product = $value;
-	    // $item_description = $_POST['invoice_product_desc'][$key];
-	    $item_qty = $_POST['invoice_product_qty'][$key];
-	    $item_price = $_POST['invoice_product_price'][$key];
-	    $item_discount = $_POST['invoice_product_discount'][$key];
-	    $item_subtotal = $_POST['invoice_product_sub'][$key];
+	    $item_product  = $mysqli->real_escape_string($value);
+	    $item_qty      = 1;
+	    $item_price    = floatval($_POST['invoice_product_price'][$key]);
+	    $is_foc        = isset($_POST['invoice_product_foc'][$key]) && $_POST['invoice_product_foc'][$key] == '1';
+	    $item_discount = $is_foc ? $item_price : 0;
+	    $item_subtotal = $is_foc ? 0 : $item_price;
 
-	    // insert invoice items into database
-		$query .= "INSERT INTO invoice_items (
+	    $query .= "INSERT INTO invoice_items (
 				invoice,
 				product,
 				qty,
@@ -571,7 +569,6 @@ if($action == 'update_invoice') {
 				'".$item_subtotal."'
 			);
 		";
-
 	}
 
 	header('Content-Type: application/json');
@@ -582,72 +579,6 @@ if($action == 'update_invoice') {
 			'status' => 'Success',
 			'message'=> 'Product has been updated successfully!'
 		));
-
-		//Set default date timezone
-		date_default_timezone_set(TIMEZONE);
-		//Include Invoicr class
-		include('invoice.php');
-		//Create a new instance
-		$invoice = new invoicr("A4",CURRENCY,"en");
-		//Set number formatting
-		$invoice->setNumberFormat('.',',');
-		//Set your logo
-		$invoice->setLogo(COMPANY_LOGO,COMPANY_LOGO_WIDTH,COMPANY_LOGO_HEIGHT);
-		//Set theme color
-		$invoice->setColor(INVOICE_THEME);
-		//Set type
-		$invoice->setType("Invoice");
-		//Set reference
-		$invoice->setReference($invoice_number);
-		//Set date
-		$invoice->setDate($invoice_date);
-		//Set due date
-		$invoice->setDue($invoice_due_date);
-		//Set from
-		$invoice->setFrom(array(COMPANY_NAME,COMPANY_ADDRESS_1,COMPANY_ADDRESS_2,COMPANY_COUNTY,COMPANY_POSTCODE,COMPANY_NUMBER,COMPANY_VAT));
-		//Set to
-		$invoice->setTo(array($customer_name,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,"Phone: ".$customer_phone));
-		//Add items
-		// invoice product items
-		foreach($_POST['invoice_product'] as $key => $value) {
-		    $item_product = $value;
-		    // $item_description = $_POST['invoice_product_desc'][$key];
-		    $item_qty = $_POST['invoice_product_qty'][$key];
-		    $item_price = $_POST['invoice_product_price'][$key];
-		    $item_discount = $_POST['invoice_product_discount'][$key];
-		    $item_subtotal = $_POST['invoice_product_sub'][$key];
-
-		   	if(ENABLE_VAT == true) {
-		   		$item_vat = (VAT_RATE / 100) * $item_subtotal;
-		   	}
-
-		    $invoice->addItem($item_product,'',$item_qty,$item_vat,$item_price,$item_discount,$item_subtotal);
-		}
-		//Add totals
-		$invoice->addTotal("Total",$invoice_subtotal);
-		if(!empty($invoice_discount)) {
-			$invoice->addTotal("Discount",$invoice_discount);
-		}
-
-		if(ENABLE_VAT == true) {
-			$invoice->addTotal("TAX/VAT ".VAT_RATE."%",$invoice_vat);
-		}
-		$invoice->addTotal("Total Due",$invoice_total,true);
-		//Add Badge
-		$invoice->addBadge($invoice_status);
-		// Customer notes:
-		if(!empty($invoice_notes)) {
-			$invoice->addTitle("Customer Notes");
-			$invoice->addParagraph($invoice_notes);
-		}
-		//Add Title
-		$invoice->addTitle("Payment information");
-		//Add Paragraph
-		$invoice->addParagraph(PAYMENT_DETAILS);
-		//Set footer note
-		$invoice->setFooternote(FOOTER_NOTE);
-		//Render the PDF
-		$invoice->render(__DIR__ . '/../invoices/'.$invoice_number.'.pdf','F');
 
 	} else {
 	    //if unable to create new record

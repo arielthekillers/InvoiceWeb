@@ -27,31 +27,14 @@ include('../includes/header.php');
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <input type="text" class="form-control copy-input required" name="customer_name" id="customer_name" placeholder="Enter Name" tabindex="1">
+                            <input type="text" class="form-control required" name="customer_name" id="customer_name" placeholder="Enter Name" tabindex="1">
                         </div>
                         <div class="col-md-6">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" class="form-control copy-input required" name="customer_email" id="customer_email" placeholder="Email Address" tabindex="2">
-                            </div>
+                            <input type="text" class="form-control required" name="customer_address_1" id="customer_address_1" placeholder="Address" tabindex="2">
                         </div>
+
                         <div class="col-md-6">
-                            <input type="text" class="form-control copy-input required" name="customer_address_1" id="customer_address_1" placeholder="Address 1" tabindex="3">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control copy-input" name="customer_address_2" id="customer_address_2" placeholder="Address 2" tabindex="4">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control copy-input required" name="customer_town" id="customer_town" placeholder="Town/City" tabindex="5">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control copy-input required" name="customer_county" id="customer_county" placeholder="Country" tabindex="6">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control copy-input required" name="customer_postcode" id="customer_postcode" placeholder="Postcode" tabindex="7">
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control required" name="customer_phone" id="invoice_phone" placeholder="Phone Number" tabindex="8">
+                            <input type="text" class="form-control required" name="customer_phone" id="invoice_phone" placeholder="Phone Number" tabindex="3">
                         </div>
                     </div>
                 </div>
